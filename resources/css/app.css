@@ -1,0 +1,878 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+
+}
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+    --font-display: 'Playfair Display', Georgia, serif;
+    --color-admin-navy: #0d2232;
+    --color-admin-navy-hover: #16364d;
+    --color-admin-navy-light: #204865;
+    --color-admin-orange: #f97316;
+    --color-admin-orange-hover: #fb923c;
+    --color-admin-canvas: #f8fafc;
+    --color-admin-border: #e5e7eb;
+    --color-admin-text: #1f2937;
+    --color-admin-muted: #6b7280;
+}
+
+@utility font-display {
+    font-family: var(--font-display);
+}
+
+@utility sg-input {
+    @apply block w-full rounded-[10px] border border-[#DDD7CE] bg-[#F5F2ED] px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-admin-navy-light focus:ring-3 focus:ring-admin-navy/10 dark:border-white/10 dark:bg-[#112a3d] dark:text-white dark:placeholder:text-white/35 dark:focus:border-orange-400/50 dark:focus:ring-orange-500/15;
+}
+
+@utility portal-nav-link {
+    @apply rounded-[10px] px-3 py-2 text-sm font-medium text-[#0D2232]/70 transition hover:bg-[#F0EBE4] hover:text-[#0D2232] dark:text-white/75 dark:hover:bg-white/10 dark:hover:text-white;
+}
+
+@utility portal-nav-link--active {
+    @apply bg-orange-50 text-orange-700 ring-1 ring-orange-200/80 dark:bg-white/10 dark:text-white dark:ring-white/10;
+}
+
+@utility portal-card {
+    @apply rounded-2xl border border-[#E8E3DB] shadow-[0_4px_14px_rgba(61,48,36,.05)] dark:border-white/10 dark:bg-[#112a3d] dark:shadow-[0_8px_28px_rgba(0,0,0,.35)];
+    background: var(--portal-surface);
+}
+
+@utility portal-heading {
+    @apply text-[#0D2232] dark:text-white;
+}
+
+@utility portal-muted {
+    @apply text-[#6B635A] dark:text-white/55;
+}
+
+.portal-shell {
+    --portal-bg: #f7f5f2;
+    --portal-surface: #fbfaf8;
+    --portal-surface-soft: #f3f0eb;
+    --portal-text: #2a2520;
+    --portal-muted: #6b635a;
+    --portal-border: #e8e3db;
+    --portal-glow-a: rgba(249, 115, 22, 0.1);
+    --portal-glow-b: rgba(148, 163, 184, 0.14);
+    --portal-scrollbar-thumb: rgba(13, 34, 50, 0.18);
+    --portal-scrollbar-thumb-hover: rgba(13, 34, 50, 0.32);
+    background: var(--portal-bg);
+    color: var(--portal-text);
+    /* Instant theme flips; the wave transition handles the visual change. */
+    transition: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--portal-scrollbar-thumb) transparent;
+}
+
+.dark .portal-shell {
+    --portal-bg: #07131d;
+    --portal-surface: #112a3d;
+    --portal-surface-soft: #0d2232;
+    --portal-text: #f3f4f6;
+    --portal-muted: rgba(255, 255, 255, 0.55);
+    --portal-border: rgba(255, 255, 255, 0.1);
+    --portal-glow-a: rgba(249, 115, 22, 0.18);
+    --portal-glow-b: rgba(32, 72, 101, 0.45);
+    --portal-scrollbar-thumb: rgba(255, 255, 255, 0.22);
+    --portal-scrollbar-thumb-hover: rgba(255, 255, 255, 0.38);
+}
+
+.portal-shell::-webkit-scrollbar,
+.portal-shell *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.portal-shell::-webkit-scrollbar-track,
+.portal-shell *::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.portal-shell::-webkit-scrollbar-thumb,
+.portal-shell *::-webkit-scrollbar-thumb {
+    background: var(--portal-scrollbar-thumb);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+
+.portal-shell::-webkit-scrollbar-thumb:hover,
+.portal-shell *::-webkit-scrollbar-thumb:hover {
+    background: var(--portal-scrollbar-thumb-hover);
+    background-clip: padding-box;
+}
+
+.portal-shell::-webkit-scrollbar-button,
+.portal-shell *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.portal-shell main :is(button, a, input, select, textarea):focus-visible {
+    outline: 2px solid #204865;
+    outline-offset: 2px;
+}
+
+.dark .portal-shell main :is(button, a, input, select, textarea):focus-visible {
+    outline-color: #f97316;
+}
+
+.portal-shell main :is(button, a) {
+    transition-duration: 150ms;
+}
+
+.portal-shell main :is(.rounded-2xl, .rounded-xl, .rounded-3xl).border.bg-white {
+    border-color: var(--portal-border);
+    background: var(--portal-surface);
+    box-shadow: 0 4px 14px rgba(61, 48, 36, 0.06);
+}
+
+.dark .portal-shell main :is(.rounded-2xl, .rounded-xl, .rounded-3xl).border.bg-white {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.portal-shell main :is(input, select, textarea) {
+    color: var(--portal-text);
+}
+
+/* Soft light remaps — avoid harsh pure white surfaces */
+.portal-shell main .bg-white {
+    background-color: var(--portal-surface);
+}
+
+.portal-shell main .bg-white\/60 {
+    background-color: color-mix(in srgb, var(--portal-surface) 72%, transparent);
+}
+
+.portal-shell main .bg-slate-50,
+.portal-shell main .bg-slate-100 {
+    background-color: var(--portal-surface-soft);
+}
+
+.portal-shell main .border-gray-100,
+.portal-shell main .border-gray-200,
+.portal-shell main .border-gray-300 {
+    border-color: var(--portal-border);
+}
+
+.portal-shell main .hover\:bg-slate-50:hover,
+.portal-shell main .hover\:bg-slate-100:hover {
+    background-color: #ebe5dc;
+}
+
+.portal-shell main .hover\:bg-white:hover {
+    background-color: #ebe5dc;
+}
+
+/* Soft dark-mode remaps for existing portal page utility classes */
+.dark .portal-shell main .bg-white {
+    background-color: #112a3d;
+}
+
+.dark .portal-shell main .bg-white\/60,
+.dark .portal-shell main .bg-slate-50,
+.dark .portal-shell main .bg-slate-100 {
+    background-color: rgba(17, 42, 61, 0.72);
+}
+
+.dark .portal-shell main .border-gray-100,
+.dark .portal-shell main .border-gray-200,
+.dark .portal-shell main .border-gray-300 {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .portal-shell main .text-gray-900,
+.dark .portal-shell main .text-\[\#0D2232\],
+.dark .portal-shell main .text-\[\#16364D\] {
+    color: #f3f4f6;
+}
+
+.dark .portal-shell main .text-gray-700,
+.dark .portal-shell main .text-gray-600,
+.dark .portal-shell main .text-gray-500,
+.dark .portal-shell main .text-gray-400 {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.dark .portal-shell main .hover\:bg-slate-50:hover,
+.dark .portal-shell main .hover\:bg-slate-100:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Root canvas for theme wave transitions (admin + portal). */
+html {
+    background-color: #f7f5f2;
+}
+
+html.dark {
+    background-color: #07131d;
+}
+
+/* Circular wave theme transition from the toggle button */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+    /* Avoid letterboxing flashes behind the snapshots. */
+    height: 100%;
+    width: 100%;
+}
+
+/* Keep the transition group alive for the custom clip-path wave. */
+html.theme-transitioning::view-transition-group(root) {
+    animation-duration: var(--theme-wave-ms, 700ms);
+}
+
+::view-transition-old(root) {
+    z-index: 1;
+}
+
+::view-transition-new(root) {
+    z-index: 9999;
+}
+
+/* Light-mode return: keep the dark snapshot on top while it shrinks back. */
+html.theme-wave-reverse::view-transition-old(root) {
+    z-index: 9999;
+}
+
+html.theme-wave-reverse::view-transition-new(root) {
+    z-index: 1;
+}
+
+/* Prevent shell color transitions from flashing after the wave ends. */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none !important;
+    }
+
+    html.theme-transitioning::view-transition-group(root) {
+        animation-duration: 0ms;
+    }
+}
+
+@layer components {
+    .admin-card {
+        @apply rounded-2xl border p-6;
+        border-color: var(--admin-border);
+        background: var(--admin-surface);
+        box-shadow: 0 4px 14px rgba(61, 48, 36, 0.06);
+        transition: transform 200ms ease, box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease;
+    }
+
+    .admin-card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(61, 48, 36, 0.1);
+    }
+
+    .dark .admin-card-hover:hover {
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .admin-btn {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] px-4 py-2 text-sm font-semibold transition duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .admin-btn-primary {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] bg-admin-navy px-4 py-2 text-sm font-semibold text-white transition duration-150 hover:bg-admin-navy-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-admin-navy disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .admin-btn-secondary {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] border px-4 py-2 text-sm font-semibold transition duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-admin-navy disabled:pointer-events-none disabled:opacity-50;
+        border-color: var(--admin-border);
+        background: var(--admin-surface-soft);
+        color: var(--admin-text);
+    }
+
+    .admin-btn-secondary:hover {
+        background: var(--admin-hover);
+    }
+
+    .admin-btn-accent {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] bg-admin-orange px-4 py-2 text-sm font-semibold text-white transition duration-150 hover:bg-admin-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-admin-orange disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .admin-btn-danger {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] bg-red-600 px-4 py-2 text-sm font-semibold text-white transition duration-150 hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .admin-field {
+        @apply block w-full rounded-[10px] border px-3.5 py-2.5 text-sm shadow-sm outline-none transition focus:border-admin-navy-light focus:ring-3 focus:ring-admin-navy/10 disabled:cursor-not-allowed disabled:opacity-60;
+        border-color: var(--admin-border);
+        background: var(--admin-surface-soft);
+        color: var(--admin-text);
+    }
+
+    .admin-badge {
+        @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+    }
+
+    .admin-badge-completed {
+        @apply inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700 dark:bg-green-500/15 dark:text-green-300;
+    }
+
+    .admin-badge-pending {
+        @apply inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300;
+    }
+
+    .admin-badge-cancelled {
+        @apply inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-500/15 dark:text-red-300;
+    }
+
+    .admin-badge-preparing {
+        @apply inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300;
+    }
+
+    .admin-table-shell {
+        @apply overflow-hidden rounded-2xl border;
+        border-color: var(--admin-border);
+        background: var(--admin-surface);
+        box-shadow: 0 4px 14px rgba(61, 48, 36, 0.06);
+    }
+
+    .admin-chrome {
+        background: var(--admin-chrome);
+        color: var(--admin-chrome-text);
+        border-color: var(--admin-chrome-border);
+    }
+
+    .admin-chrome-btn {
+        @apply inline-flex items-center justify-center rounded-[10px] border shadow-sm transition duration-150;
+        border-color: var(--admin-chrome-border);
+        background: var(--admin-chrome-btn);
+        color: var(--admin-chrome-text);
+    }
+
+    .admin-chrome-btn:hover {
+        background: var(--admin-chrome-hover);
+    }
+
+    .admin-nav-item {
+        @apply flex min-h-11 items-center gap-3 rounded-[10px] border-l-4 border-transparent px-3 py-2 text-sm font-medium transition duration-150;
+        color: var(--admin-chrome-muted);
+    }
+
+    .admin-nav-item:hover {
+        background: var(--admin-chrome-hover);
+        color: var(--admin-chrome-text);
+    }
+
+    .admin-nav-item--active {
+        border-left-color: #f97316;
+        background: var(--admin-chrome-active);
+        color: var(--admin-chrome-text);
+        padding-left: 0.5rem !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .admin-nav-section {
+        color: var(--admin-chrome-section);
+    }
+}
+
+/* Shared admin polish for legacy Blade screens. Soft light + full dark. */
+.admin-shell {
+    --admin-bg: #eae6e0;
+    --admin-surface: #f5f2ed;
+    --admin-surface-soft: #f0ebe4;
+    --admin-hover: #ebe5dc;
+    --admin-border: #ddd7ce;
+    --admin-text: #2a2520;
+    --admin-muted: #6b635a;
+    --admin-chrome: #f0ebe4;
+    --admin-chrome-hover: #e8e1d8;
+    --admin-chrome-active: #e4ddd4;
+    --admin-chrome-btn: #f5f2ed;
+    --admin-chrome-text: #0d2232;
+    --admin-chrome-muted: rgba(13, 34, 50, 0.72);
+    --admin-chrome-section: rgba(13, 34, 50, 0.42);
+    --admin-chrome-border: #ddd7ce;
+    --admin-scrollbar-size: 6px;
+    --admin-scrollbar-track: transparent;
+    --admin-scrollbar-thumb: rgba(13, 34, 50, 0.22);
+    --admin-scrollbar-thumb-hover: rgba(13, 34, 50, 0.38);
+    color: var(--admin-text);
+    background: var(--admin-bg);
+    /* Instant theme flips; the wave transition handles the visual change. */
+    transition: none;
+}
+
+.dark .admin-shell {
+    --admin-bg: #07131d;
+    --admin-surface: #112a3d;
+    --admin-surface-soft: #0d2232;
+    --admin-hover: rgba(255, 255, 255, 0.06);
+    --admin-border: rgba(255, 255, 255, 0.1);
+    --admin-text: #f3f4f6;
+    --admin-muted: rgba(255, 255, 255, 0.55);
+    --admin-chrome: #0d2232;
+    --admin-chrome-hover: #16364d;
+    --admin-chrome-active: #16364d;
+    --admin-chrome-btn: rgba(255, 255, 255, 0.05);
+    --admin-chrome-text: #ffffff;
+    --admin-chrome-muted: rgba(255, 255, 255, 0.75);
+    --admin-chrome-section: rgba(255, 255, 255, 0.45);
+    --admin-chrome-border: rgba(255, 255, 255, 0.1);
+    --admin-scrollbar-thumb: rgba(255, 255, 255, 0.22);
+    --admin-scrollbar-thumb-hover: rgba(255, 255, 255, 0.38);
+}
+
+/* Slim modern scrollbars (sidebar + main content). */
+.admin-shell,
+.admin-shell * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--admin-scrollbar-thumb) var(--admin-scrollbar-track);
+}
+
+.admin-shell::-webkit-scrollbar,
+.admin-shell *::-webkit-scrollbar {
+    width: var(--admin-scrollbar-size);
+    height: var(--admin-scrollbar-size);
+}
+
+.admin-shell::-webkit-scrollbar-track,
+.admin-shell *::-webkit-scrollbar-track {
+    background: var(--admin-scrollbar-track);
+}
+
+.admin-shell::-webkit-scrollbar-thumb,
+.admin-shell *::-webkit-scrollbar-thumb {
+    background: var(--admin-scrollbar-thumb);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+
+.admin-shell::-webkit-scrollbar-thumb:hover,
+.admin-shell *::-webkit-scrollbar-thumb:hover {
+    background: var(--admin-scrollbar-thumb-hover);
+    background-clip: padding-box;
+}
+
+.admin-shell::-webkit-scrollbar-button,
+.admin-shell *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.admin-shell::-webkit-scrollbar-corner,
+.admin-shell *::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+.admin-shell #main-content {
+    background: var(--admin-bg);
+    color: var(--admin-text);
+}
+
+.admin-shell #main-content .border-b.bg-white,
+.admin-shell #main-content .border-b.border-gray-200.bg-white {
+    background: var(--admin-surface) !important;
+    border-color: var(--admin-border) !important;
+}
+
+.admin-shell #main-content :is(.rounded-xl, .rounded-lg, .rounded-2xl).border.bg-white,
+.admin-shell #main-content :is(.rounded-xl, .rounded-lg).border.border-zinc-200.bg-white,
+.admin-shell #main-content .bg-white,
+.admin-shell #main-content .bg-white\/60,
+.admin-shell #main-content .bg-white\/50 {
+    border-color: var(--admin-border);
+    background: var(--admin-surface) !important;
+    box-shadow: 0 4px 14px rgba(61, 48, 36, 0.06);
+}
+
+.dark .admin-shell #main-content .bg-white,
+.dark .admin-shell #main-content .bg-white\/60,
+.dark .admin-shell #main-content .bg-white\/50 {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.admin-shell #main-content .bg-slate-50,
+.admin-shell #main-content .bg-slate-50\/50,
+.admin-shell #main-content .bg-slate-50\/60,
+.admin-shell #main-content .bg-slate-100,
+.admin-shell #main-content .bg-zinc-50,
+.admin-shell #main-content .bg-zinc-100,
+.admin-shell #main-content .bg-gray-50,
+.admin-shell #main-content .bg-gray-100,
+.admin-shell #main-content thead {
+    background: var(--admin-surface-soft) !important;
+}
+
+.admin-shell #main-content .border-gray-100,
+.admin-shell #main-content .border-gray-200,
+.admin-shell #main-content .border-gray-300,
+.admin-shell #main-content .border-zinc-200,
+.admin-shell #main-content .border-zinc-300,
+.admin-shell #main-content .border-slate-200 {
+    border-color: var(--admin-border) !important;
+}
+
+.admin-shell #main-content .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.admin-shell #main-content .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.admin-shell #main-content .divide-zinc-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--admin-border) !important;
+}
+
+.admin-shell #main-content .text-gray-900,
+.admin-shell #main-content .text-zinc-900,
+.admin-shell #main-content .text-zinc-800,
+.admin-shell #main-content .text-slate-900,
+.admin-shell #main-content .text-slate-800,
+.admin-shell #main-content .text-black,
+.admin-shell #main-content .text-\[\#0D2232\],
+.admin-shell #main-content .text-\[\#1F2937\],
+.admin-shell #main-content .text-\[\#16364D\] {
+    color: var(--admin-text) !important;
+}
+
+.admin-shell #main-content .text-gray-700,
+.admin-shell #main-content .text-gray-600,
+.admin-shell #main-content .text-gray-500,
+.admin-shell #main-content .text-gray-400,
+.admin-shell #main-content .text-zinc-700,
+.admin-shell #main-content .text-zinc-600,
+.admin-shell #main-content .text-zinc-500,
+.admin-shell #main-content .text-zinc-400,
+.admin-shell #main-content .text-slate-700,
+.admin-shell #main-content .text-slate-600,
+.admin-shell #main-content .text-slate-500,
+.admin-shell #main-content .text-slate-400 {
+    color: var(--admin-muted) !important;
+}
+
+.admin-shell #main-content .hover\:bg-slate-50:hover,
+.admin-shell #main-content .hover\:bg-slate-100:hover,
+.admin-shell #main-content .hover\:bg-zinc-50:hover,
+.admin-shell #main-content .hover\:bg-white:hover {
+    background: var(--admin-hover) !important;
+}
+
+.admin-shell #main-content table {
+    width: 100%;
+    color: var(--admin-text);
+}
+
+.admin-shell #main-content thead :is(th, td) {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--admin-muted);
+}
+
+.admin-shell #main-content tbody {
+    color: var(--admin-text);
+}
+
+.admin-shell #main-content tbody tr {
+    transition: background-color 150ms ease;
+}
+
+.admin-shell #main-content tbody tr:hover {
+    background: var(--admin-hover);
+}
+
+.admin-shell :is(button, a, summary, [role='button']) {
+    transition-duration: 150ms;
+    transition-timing-function: ease;
+}
+
+.admin-shell #main-content :is(button, a, summary)[class*='rounded-lg'] {
+    border-radius: 0.625rem;
+}
+
+.admin-shell #main-content .admin-table-shell {
+    border-color: var(--admin-border);
+    background: var(--admin-surface);
+}
+
+.admin-shell #main-content .admin-table-shell :is(th, td) {
+    border-color: var(--admin-border);
+}
+
+.admin-shell #main-content .admin-table-shell tbody {
+    color: var(--admin-text);
+}
+
+.admin-shell #main-content .admin-table-shell tbody tr:nth-child(even) {
+    background: color-mix(in srgb, var(--admin-surface-soft) 55%, transparent);
+}
+
+.admin-shell #main-content .admin-table-shell tbody tr:hover {
+    background: var(--admin-hover);
+}
+
+.admin-shell #main-content :is(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+    border-color: var(--admin-border);
+    border-radius: 0.625rem;
+    background: var(--admin-surface-soft);
+    color: var(--admin-text);
+}
+
+.admin-shell #main-content :is(input, select, textarea)::placeholder {
+    color: var(--admin-muted);
+    opacity: 0.85;
+}
+
+.admin-shell #main-content :is(input, select, textarea, button, a):focus-visible {
+    outline: 2px solid #204865;
+    outline-offset: 2px;
+}
+
+.dark .admin-shell #main-content :is(input, select, textarea, button, a):focus-visible {
+    outline-color: #f97316;
+}
+
+/* Keep action accents readable on dark surfaces. */
+.dark .admin-shell #main-content a.text-blue-600,
+.dark .admin-shell #main-content .text-blue-600 {
+    color: #60a5fa !important;
+}
+
+.dark .admin-shell #main-content a.text-red-600,
+.dark .admin-shell #main-content .text-red-600,
+.dark .admin-shell #main-content .text-red-700 {
+    color: #f87171 !important;
+}
+
+.dark .admin-shell #main-content .border-red-200 {
+    border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+.dark .admin-shell #main-content .hover\:bg-red-50:hover {
+    background: rgba(248, 113, 113, 0.12) !important;
+}
+
+/* Prefer native control colors that match the active theme. */
+html:not(.dark) {
+    color-scheme: light;
+}
+
+html.dark {
+    color-scheme: dark;
+}
+
+/*
+ * Dialogs teleported to <body> (x-teleport, sys_dialog, icon picker, Swal)
+ * sit outside #main-content, so they need their own dark remaps.
+ */
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) {
+    color: #f3f4f6;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-white,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-white\/60,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-white\/50 {
+    background: #112a3d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-slate-50,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-slate-50\/50,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-slate-50\/60,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-slate-100,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-zinc-50,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-zinc-100,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-gray-50,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .bg-gray-100,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) thead {
+    background: #0d2232 !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .border-gray-100,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .border-gray-200,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .border-gray-300,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .border-zinc-200,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .border-zinc-300,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .border-slate-200 {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .divide-zinc-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-gray-900,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-zinc-900,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-zinc-800,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-slate-900,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-slate-800,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-black,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-\[\#0D2232\],
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-\[\#1F2937\],
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-\[\#16364D\] {
+    color: #f3f4f6 !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-gray-700,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-gray-600,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-gray-500,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-gray-400,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-zinc-700,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-zinc-600,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-zinc-500,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-zinc-400,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-slate-700,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-slate-600,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-slate-500,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-slate-400 {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .hover\:bg-slate-50:hover,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .hover\:bg-slate-100:hover,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .hover\:bg-zinc-50:hover,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .hover\:bg-white:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) table,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) tbody {
+    color: #f3f4f6;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) thead :is(th, td) {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) :is(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background: #0d2232 !important;
+    color: #f3f4f6 !important;
+    color-scheme: dark;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) :is(input, select, textarea)::placeholder {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) a.text-blue-600,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-blue-600 {
+    color: #60a5fa !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) a.text-red-600,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-red-600,
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .text-red-700 {
+    color: #f87171 !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .border-red-200 {
+    border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+html.dark :is([role='dialog'], #sys-dialog-root, #fa-icon-picker-root) .hover\:bg-red-50:hover {
+    background: rgba(248, 113, 113, 0.12) !important;
+}
+
+/* SweetAlert2 confirms (appended to body). */
+html.dark .swal2-popup {
+    background: #112a3d !important;
+    color: #f3f4f6 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem !important;
+}
+
+html.dark .swal2-title {
+    color: #f3f4f6 !important;
+}
+
+html.dark .swal2-html-container,
+html.dark .swal2-content {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+html.dark .swal2-icon.swal2-warning {
+    border-color: #f59e0b !important;
+    color: #f59e0b !important;
+}
+
+html.dark .swal2-icon.swal2-question {
+    border-color: #60a5fa !important;
+    color: #60a5fa !important;
+}
+
+html.dark .swal2-styled.swal2-confirm {
+    background-color: #f97316 !important;
+}
+
+html.dark .swal2-styled.swal2-cancel {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    color: #f3f4f6 !important;
+}
+
+html.dark .swal2-backdrop-show {
+    background: rgba(7, 19, 29, 0.72) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-shell *,
+    .admin-shell *::before,
+    .admin-shell *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .admin-card-hover:hover {
+        transform: none;
+    }
+}
+
+/* Animated login background waves */
+@keyframes login-waves-scroll {
+    to {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+.login-waves-track {
+    display: flex;
+    width: 200%;
+    height: 100%;
+    will-change: transform;
+    animation: login-waves-scroll 22s linear infinite;
+}
+
+.login-waves-track--slow {
+    animation: login-waves-scroll 36s linear infinite;
+    animation-delay: -10s;
+    opacity: 0.42;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-waves-track,
+    .login-waves-track--slow {
+        animation: none;
+        transform: none;
+    }
+}
+

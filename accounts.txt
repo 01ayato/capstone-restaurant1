@@ -1,0 +1,18 @@
+Smoke n' Grill — Test Accounts
+Generated: 2026-08-13 07:10:01
+============================================================
+
+ID:       2
+Name:     Admin Admin
+Email:    admin@gmail.com
+Password: admin123
+Role:     superadmin
+Created:  2026-06-29 03:53:33
+--------------------------------------------------------
+ID:       4
+Name:     Test Account
+Email:    test@gmail.com
+Password: test123
+Role:     user
+Created:  2026-08-13 07:08:12
+------------------------------------------------------------
