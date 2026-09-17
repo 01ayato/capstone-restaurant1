@@ -42,7 +42,8 @@ Route::post('/register', function (Request $request) {
     ]);
 
     $validated = $request->validate([
-        'full_name' => ['required', 'string', 'max:200'],
+        'first_name' => ['required', 'string', 'max:100'],
+        'last_name' => ['required', 'string', 'max:100'],
         'username' => ['required', 'string', 'max:50', 'alpha_dash', Rule::unique('users', 'username')],
         'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
         'phone' => ['required', 'string', 'max:30'],
@@ -58,13 +59,9 @@ Route::post('/register', function (Request $request) {
         ],
     ]);
 
-    $nameParts = preg_split('/\s+/', trim($validated['full_name']), 2);
-    $firstName = $nameParts[0] ?? $validated['full_name'];
-    $lastName = $nameParts[1] ?? '';
-
     $user = User::create([
-        'first_name' => $firstName,
-        'last_name' => $lastName ?: $firstName,
+        'first_name' => trim($validated['first_name']),
+        'last_name' => trim($validated['last_name']),
         'username' => $validated['username'],
         'email' => $validated['email'],
         'phone' => $validated['phone'],

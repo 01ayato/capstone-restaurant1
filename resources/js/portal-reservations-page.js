@@ -149,6 +149,9 @@ export function registerPortalReservationsPage(Alpine) {
                 if (!this.reservedAt) {
                     return 'Please choose a date and time.';
                 }
+                if (this.sameDayTooSoon()) {
+                    return 'Same-day reservations must be made at least 1 hour in advance.';
+                }
                 if (!this.withinOpeningHours) {
                     return `We're open ${this.openingHoursLabel}. Please pick a time from 2:00 PM (dining window must end by midnight).`;
                 }
@@ -167,9 +170,29 @@ export function registerPortalReservationsPage(Alpine) {
             return this.customerName.trim().length > 0 && this.contactNumber.trim().length > 0;
         },
 
+        sameDayTooSoon() {
+            if (!this.reservedAt) {
+                return false;
+            }
+
+            const selected = new Date(this.reservedAt);
+            if (Number.isNaN(selected.getTime())) {
+                return false;
+            }
+
+            const now = new Date();
+            const sameDay = selected.getFullYear() === now.getFullYear()
+                && selected.getMonth() === now.getMonth()
+                && selected.getDate() === now.getDate();
+
+            // Same-day bookings must be at least 1 hour ahead; future dates are unrestricted.
+            return sameDay && selected.getTime() < now.getTime() + 60 * 60 * 1000;
+        },
+
         canProceedStep2() {
             return Boolean(this.reservedAt)
                 && this.withinOpeningHours
+                && !this.sameDayTooSoon()
                 && Boolean(this.selectedTableId)
                 && !this.isTableUnavailable(this.selectedTableId);
         },

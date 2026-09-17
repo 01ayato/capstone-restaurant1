@@ -23,6 +23,7 @@ export function registerPosPage(Alpine) {
         orderType: 'dine_in',
         paymentMethod: 'cash',
         notes: '',
+        amountTendered: '',
         storeUrl: initial?.storeUrl ?? '',
         ordersUrl: initial?.ordersUrl ?? '',
         submitting: false,
@@ -43,6 +44,10 @@ export function registerPosPage(Alpine) {
 
         get cartCount() {
             return this.cart.reduce((sum, line) => sum + line.quantity, 0);
+        },
+
+        get change() {
+            return (parseFloat(this.amountTendered) || 0) - this.total;
         },
 
         formatMoney(amount) {
@@ -137,6 +142,11 @@ export function registerPosPage(Alpine) {
                 return;
             }
 
+            if (this.paymentMethod === 'cash' && (parseFloat(this.amountTendered) || 0) < this.total) {
+                window.toast?.warning?.('Amount tendered is less than the total amount.');
+                return;
+            }
+
             this.submitting = true;
 
             try {
@@ -174,6 +184,7 @@ export function registerPosPage(Alpine) {
                 window.toast?.success?.(data.message ?? 'Order created.');
                 this.clearCart();
                 this.notes = '';
+                this.amountTendered = '';
                 this.closeCheckout();
             } catch {
                 window.toast?.error?.('Could not complete the sale. Please try again.');

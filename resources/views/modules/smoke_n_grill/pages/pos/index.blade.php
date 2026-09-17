@@ -284,6 +284,25 @@
                     </div>
 
                     <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4">
+                        <template x-if="paymentMethod === 'cash'">
+                            <div class="mb-4 space-y-3">
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Amount Tendered <span class="font-normal text-gray-400">(Cash Given)</span></label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        x-model="amountTendered"
+                                        placeholder="0.00"
+                                        class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm"
+                                    >
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="font-medium text-gray-500">Change (Sukli)</span>
+                                    <span class="font-bold tabular-nums" x-bind:class="change < 0 ? 'text-red-600' : 'text-emerald-700'" x-text="formatMoney(Math.max(change, 0))"></span>
+                                </div>
+                            </div>
+                        </template>
                         <div class="flex items-center justify-between text-lg font-bold text-gray-900">
                             <span>Total</span>
                             <span class="tabular-nums" x-text="formatMoney(total)"></span>
@@ -347,6 +366,25 @@
                     </div>
 
                     <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4">
+                        <template x-if="paymentMethod === 'cash'">
+                            <div class="mb-4 space-y-3">
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Amount Tendered <span class="font-normal text-gray-400">(Cash Given)</span></label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        x-model="amountTendered"
+                                        placeholder="0.00"
+                                        class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm"
+                                    >
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="font-medium text-gray-500">Change (Sukli)</span>
+                                    <span class="font-bold tabular-nums" x-bind:class="change < 0 ? 'text-red-600' : 'text-emerald-700'" x-text="formatMoney(Math.max(change, 0))"></span>
+                                </div>
+                            </div>
+                        </template>
                         <div class="flex items-center justify-between text-lg font-bold text-gray-900">
                             <span>Total</span>
                             <span class="tabular-nums" x-text="formatMoney(total)"></span>
@@ -364,7 +402,7 @@
                                 type="button"
                                 class="rounded-lg bg-emerald-600 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                                 x-on:click="completeSale()"
-                                x-bind:disabled="submitting"
+                                x-bind:disabled="submitting || (paymentMethod === 'cash' && amountTendered < total)"
                             >
                                 <span x-show="!submitting">Proceed to Complete</span>
                                 <span x-show="submitting" x-cloak>Processing...</span>

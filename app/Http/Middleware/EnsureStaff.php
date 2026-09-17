@@ -18,7 +18,7 @@ class EnsureStaff
     {
         $user = Auth::user();
 
-        if ($user === null || (! $user->isSuperadmin() && ! $user->isAdmin())) {
+        if ($user === null || (! $user->isSuperadmin() && ! $user->isAdmin() && ! $user->isCashier())) {
             abort(403, 'Unauthorized access.');
         }
 

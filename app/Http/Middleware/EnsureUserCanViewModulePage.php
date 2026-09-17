@@ -43,6 +43,16 @@ class EnsureUserCanViewModulePage
         $moduleAlias = $parts[1];
         $pageAlias = $parts[2];
 
+        // Front of House pages must be reachable by staff (admin/cashier). The sidebar already
+        // hides Management/User Settings from cashiers, so do not 403 staff over missing
+        // module_role/page_role allow-list rows for Smoke n' Grill FoH pages.
+        $frontOfHousePages = ['pos', 'orders', 'reservations', 'customers', 'view_website'];
+        if ($moduleAlias === 'smoke_n_grill'
+            && in_array($pageAlias, $frontOfHousePages, true)
+            && $user->isStaff()) {
+            return $next($request);
+        }
+
         $module = Module::query()
             ->where('alias', $moduleAlias)
             ->where('is_active', true)

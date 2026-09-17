@@ -22,6 +22,12 @@
 
     <nav class="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-y-contain px-3 py-5">
         @php
+            $user = Auth::user();
+            $isCashier = $user?->isCashier() ?? false;
+            // superadmin + admin see Management & User Settings; cashier only sees Dashboard + Front of House.
+            $canSeeManagement = $user?->isManager() ?? false;
+            $canSeeFrontOfHouse = $canSeeManagement || $isCashier;
+
             $smokeNGrillAdminRoutes = [
                 'menu_items' => 'admin.menu-items.*',
                 'orders' => 'admin.orders.*',
@@ -30,120 +36,229 @@
                 'sales_reports' => 'admin.reports.*',
                 'restaurant_info' => 'admin.settings.*',
             ];
-        @endphp
-        <a
-            href="{{ route('dashboard') }}"
-            x-on:click="sidebarOpen = false"
-            class="{{ request()->routeIs('dashboard') ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }}"
-        >
-            <x-admin-icon name="layout-dashboard" />
-            {{ __('Dashboard') }}
-        </a>
 
-        @if ($sidebarModules->isNotEmpty())
+            $smokeModule = $sidebarModules->firstWhere('alias', 'smoke_n_grill');
+            $userSettingsModule = $sidebarModules->firstWhere('alias', 'user_settings');
+            $otherModules = $sidebarModules->reject(
+                fn ($mod) => in_array($mod->alias, ['smoke_n_grill', 'user_settings'], true)
+            );
+
+            $frontOfHouseAliases = ['pos', 'orders', 'reservations', 'customers', 'view_website'];
+            $managementAliases = ['menu_items', 'sales_reports', 'restaurant_info', 'tables_configurations'];
+
+            $routablePages = $smokeModule
+                ? $smokeModule->pages->filter(fn ($pg) => Route::has('page.smoke_n_grill.'.$pg->page_alias.'.index'))->values()
+                : collect();
+            $frontOfHousePages = $routablePages->whereIn('page_alias', $frontOfHouseAliases)->values();
+            $managementPages = $routablePages->whereIn('page_alias', $managementAliases)->values();
+
+            $pageIsActive = function ($page) use ($smokeNGrillAdminRoutes) {
+                $active = request()->routeIs('page.smoke_n_grill.'.$page->page_alias.'.*');
+                if (isset($smokeNGrillAdminRoutes[$page->page_alias])) {
+                    $active = $active || request()->routeIs($smokeNGrillAdminRoutes[$page->page_alias]);
+                }
+
+                return $active;
+            };
+
+            $dashboardActive = request()->routeIs('dashboard');
+            $frontOfHouseActive = $dashboardActive || $frontOfHousePages->contains(fn ($pg) => $pageIsActive($pg));
+            $managementActive = $managementPages->contains(fn ($pg) => $pageIsActive($pg));
+        @endphp
+
+        @if ($smokeModule)
             <p class="admin-nav-section px-3 pb-1 pt-5 text-[10px] font-bold uppercase tracking-[0.18em]">{{ __('Modules') }}</p>
             <div class="space-y-1">
-                @foreach ($sidebarModules as $mod)
-                    @php
-                        $hasModuleRoute = Route::has('module.'.$mod->alias.'.index');
-                        $routablePages = $mod->pages->filter(
-                            fn ($pg) => Route::has('page.'.$mod->alias.'.'.$pg->page_alias.'.index')
-                        );
-                        $moduleActive =
-                            request()->routeIs('module.'.$mod->alias.'.*')
-                            || $routablePages->contains(function ($pg) use ($mod, $smokeNGrillAdminRoutes) {
-                                if (request()->routeIs('page.'.$mod->alias.'.'.$pg->page_alias.'.*')) {
-                                    return true;
-                                }
-                                if ($mod->alias === 'smoke_n_grill' && isset($smokeNGrillAdminRoutes[$pg->page_alias])) {
-                                    return request()->routeIs($smokeNGrillAdminRoutes[$pg->page_alias]);
-                                }
-
-                                return false;
-                            });
-                    @endphp
-                    @continue(! $hasModuleRoute && $routablePages->isEmpty())
-                    @php
-                        $useTree = $mod->sidebar_expand_children && $routablePages->isNotEmpty();
-                    @endphp
-
-                    @if ($useTree)
-                        <div class="rounded-lg">
-                            <div
-                                class="flex w-full items-center gap-2 rounded-[10px] px-2 py-2 text-sm font-medium"
-                                style="color: {{ $moduleActive ? 'var(--admin-chrome-text)' : 'var(--admin-chrome-muted)' }}; background: {{ $moduleActive ? 'color-mix(in srgb, var(--admin-chrome-text) 6%, transparent)' : 'transparent' }}"
-                                aria-expanded="true"
-                            >
-                                <svg
-                                    class="size-4 shrink-0 rotate-90"
-                                    style="color: var(--admin-chrome-section)"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="2"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                </svg>
-                                @include('layouts.partials.sidebar-folder-toggle-icon', ['initialOpen' => true])
-                                <span class="min-w-0 flex-1 truncate">{{ $mod->name }}</span>
-                            </div>
-
-                            <div
-                                class="ml-4 mt-1 space-y-1 border-l pl-2"
-                                style="border-color: var(--admin-chrome-border)"
-                                role="group"
-                                aria-label="{{ $mod->name }}"
-                            >
-                                @foreach ($routablePages as $pg)
-                                    @php
-                                        $pageIsActive = request()->routeIs('page.'.$mod->alias.'.'.$pg->page_alias.'.*');
-                                        if ($mod->alias === 'smoke_n_grill' && isset($smokeNGrillAdminRoutes[$pg->page_alias])) {
-                                            $pageIsActive = $pageIsActive || request()->routeIs($smokeNGrillAdminRoutes[$pg->page_alias]);
-                                        }
-                                    @endphp
-                                    <a
-                                        href="{{ route('page.'.$mod->alias.'.'.$pg->page_alias.'.index') }}"
-                                        x-on:click="sidebarOpen = false"
-                                        @if ($pageIsActive) data-sidebar-active @endif
-                                        class="{{ $pageIsActive ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }} !min-h-10 !py-2 !pl-3 !pr-2"
-                                    >
-                                        @include('layouts.partials.sidebar-page-icon', ['icon' => $pg->icon])
-                                        <span class="min-w-0 truncate">{{ $pg->page_name }}</span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                    @elseif ($hasModuleRoute)
-                        <a
-                            href="{{ route('module.'.$mod->alias.'.index') }}"
-                            x-on:click="sidebarOpen = false"
-                            class="{{ $moduleActive ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }}"
+                {{-- Front of House (cashier tasks) -- visible to ALL roles --}}
+                @if ($frontOfHousePages->isNotEmpty())
+                    <div class="rounded-lg" x-data="{ open: {{ $frontOfHouseActive ? 'true' : 'false' }} }">
+                        <button
+                            type="button"
+                            class="flex w-full items-center gap-2 rounded-[10px] px-2 py-2 text-sm font-medium"
+                            style="color: {{ $frontOfHouseActive ? 'var(--admin-chrome-text)' : 'var(--admin-chrome-muted)' }}; background: {{ $frontOfHouseActive ? 'color-mix(in srgb, var(--admin-chrome-text) 6%, transparent)' : 'transparent' }}"
+                            x-bind:aria-expanded="open"
+                            x-on:click="open = ! open"
                         >
-                            @include('layouts.partials.sidebar-icon', ['icon' => 'document'])
-                            <span class="min-w-0 truncate">{{ $mod->name }}</span>
-                        </a>
-                    @else
-                        @foreach ($routablePages as $pg)
-                            @php
-                                $pageIsActive = request()->routeIs('page.'.$mod->alias.'.'.$pg->page_alias.'.*');
-                                if ($mod->alias === 'smoke_n_grill' && isset($smokeNGrillAdminRoutes[$pg->page_alias])) {
-                                    $pageIsActive = $pageIsActive || request()->routeIs($smokeNGrillAdminRoutes[$pg->page_alias]);
-                                }
-                            @endphp
+                            <svg
+                                class="size-4 shrink-0 transition-transform"
+                                x-bind:class="open ? 'rotate-90' : ''"
+                                style="color: var(--admin-chrome-section)"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                            @include('layouts.partials.sidebar-folder-toggle-icon', ['initialOpen' => $frontOfHouseActive])
+                            <span class="min-w-0 flex-1 truncate text-left">{{ __('Front of House') }}</span>
+                        </button>
+
+                        <div
+                            x-show="open"
+                            x-transition
+                            class="ml-4 mt-1 space-y-1 border-l pl-2"
+                            style="border-color: var(--admin-chrome-border)"
+                            role="group"
+                            aria-label="{{ __('Front of House') }}"
+                        >
                             <a
-                                href="{{ route('page.'.$mod->alias.'.'.$pg->page_alias.'.index') }}"
+                                href="{{ route('dashboard') }}"
                                 x-on:click="sidebarOpen = false"
-                                @if ($pageIsActive) data-sidebar-active @endif
-                                class="{{ $pageIsActive ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }} !ml-3 !min-h-10 !gap-2 !py-1.5 !pl-3 !pr-2 !text-xs"
+                                @if ($dashboardActive) data-sidebar-active @endif
+                                class="{{ $dashboardActive ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }} !min-h-10 !py-2 !pl-3 !pr-2"
+                            >
+                                <x-admin-icon name="layout-dashboard" size="size-4" />
+                                <span class="min-w-0 truncate">{{ __('Dashboard') }}</span>
+                            </a>
+                            @foreach ($frontOfHousePages as $pg)
+                                @php $active = $pageIsActive($pg); @endphp
+                                <a
+                                    href="{{ route('page.smoke_n_grill.'.$pg->page_alias.'.index') }}"
+                                    x-on:click="sidebarOpen = false"
+                                    @if ($active) data-sidebar-active @endif
+                                    class="{{ $active ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }} !min-h-10 !py-2 !pl-3 !pr-2"
+                                >
+                                    @include('layouts.partials.sidebar-page-icon', ['icon' => $pg->icon])
+                                    <span class="min-w-0 truncate">{{ $pg->page_name }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Management (admin tasks) --}}
+                @if ($canSeeManagement && $managementPages->isNotEmpty())
+                    <div class="rounded-lg" x-data="{ open: {{ $managementActive ? 'true' : 'false' }} }">
+                        <button
+                            type="button"
+                            class="flex w-full items-center gap-2 rounded-[10px] px-2 py-2 text-sm font-medium"
+                            style="color: {{ $managementActive ? 'var(--admin-chrome-text)' : 'var(--admin-chrome-muted)' }}; background: {{ $managementActive ? 'color-mix(in srgb, var(--admin-chrome-text) 6%, transparent)' : 'transparent' }}"
+                            x-bind:aria-expanded="open"
+                            x-on:click="open = ! open"
+                        >
+                            <svg
+                                class="size-4 shrink-0 transition-transform"
+                                x-bind:class="open ? 'rotate-90' : ''"
+                                style="color: var(--admin-chrome-section)"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                            @include('layouts.partials.sidebar-folder-toggle-icon', ['initialOpen' => $managementActive])
+                            <span class="min-w-0 flex-1 truncate text-left">{{ __('Management') }}</span>
+                        </button>
+
+                        <div
+                            x-show="open"
+                            x-transition
+                            class="ml-4 mt-1 space-y-1 border-l pl-2"
+                            style="border-color: var(--admin-chrome-border)"
+                            role="group"
+                            aria-label="{{ __('Management') }}"
+                        >
+                            @foreach ($managementPages as $pg)
+                                @php $active = $pageIsActive($pg); @endphp
+                                <a
+                                    href="{{ route('page.smoke_n_grill.'.$pg->page_alias.'.index') }}"
+                                    x-on:click="sidebarOpen = false"
+                                    @if ($active) data-sidebar-active @endif
+                                    class="{{ $active ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }} !min-h-10 !py-2 !pl-3 !pr-2"
+                                >
+                                    @include('layouts.partials.sidebar-page-icon', ['icon' => $pg->icon])
+                                    <span class="min-w-0 truncate">{{ $pg->page_name }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        {{-- Any other modules (fallback) --}}
+        @foreach ($otherModules as $mod)
+            @php
+                $hasModuleRoute = Route::has('module.'.$mod->alias.'.index');
+                $routable = $mod->pages->filter(fn ($pg) => Route::has('page.'.$mod->alias.'.'.$pg->page_alias.'.index'))->values();
+                $moduleActive = request()->routeIs('module.'.$mod->alias.'.*')
+                    || $routable->contains(fn ($pg) => request()->routeIs('page.'.$mod->alias.'.'.$pg->page_alias.'.*'));
+            @endphp
+            @continue(! $hasModuleRoute && $routable->isEmpty())
+            @if ($hasModuleRoute)
+                <a
+                    href="{{ route('module.'.$mod->alias.'.index') }}"
+                    x-on:click="sidebarOpen = false"
+                    class="{{ $moduleActive ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }}"
+                >
+                    @include('layouts.partials.sidebar-icon', ['icon' => 'document'])
+                    <span class="min-w-0 truncate">{{ $mod->name }}</span>
+                </a>
+            @endif
+        @endforeach
+
+        {{-- User Settings (admin only) --}}
+        @if ($canSeeManagement && $userSettingsModule)
+            @php
+                $usPages = $userSettingsModule->pages->filter(
+                    fn ($pg) => Route::has('page.user_settings.'.$pg->page_alias.'.index')
+                )->values();
+                $usActive = $usPages->contains(fn ($pg) => request()->routeIs('page.user_settings.'.$pg->page_alias.'.*'))
+                    || request()->routeIs('module.user_settings.*');
+            @endphp
+            @if ($usPages->isNotEmpty())
+                <p class="admin-nav-section px-3 pb-1 pt-5 text-[10px] font-bold uppercase tracking-[0.18em]">{{ __('Settings') }}</p>
+                <div class="rounded-lg" x-data="{ open: {{ $usActive ? 'true' : 'false' }} }">
+                    <button
+                        type="button"
+                        class="flex w-full items-center gap-2 rounded-[10px] px-2 py-2 text-sm font-medium"
+                        style="color: {{ $usActive ? 'var(--admin-chrome-text)' : 'var(--admin-chrome-muted)' }}; background: {{ $usActive ? 'color-mix(in srgb, var(--admin-chrome-text) 6%, transparent)' : 'transparent' }}"
+                        x-bind:aria-expanded="open"
+                        x-on:click="open = ! open"
+                    >
+                        <svg
+                            class="size-4 shrink-0 transition-transform"
+                            x-bind:class="open ? 'rotate-90' : ''"
+                            style="color: var(--admin-chrome-section)"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                        @include('layouts.partials.sidebar-folder-toggle-icon', ['initialOpen' => $usActive])
+                        <span class="min-w-0 flex-1 truncate text-left">{{ $userSettingsModule->name }}</span>
+                    </button>
+
+                    <div
+                        x-show="open"
+                        x-transition
+                        class="ml-4 mt-1 space-y-1 border-l pl-2"
+                        style="border-color: var(--admin-chrome-border)"
+                        role="group"
+                        aria-label="{{ $userSettingsModule->name }}"
+                    >
+                        @foreach ($usPages as $pg)
+                            @php $active = request()->routeIs('page.user_settings.'.$pg->page_alias.'.*'); @endphp
+                            <a
+                                href="{{ route('page.user_settings.'.$pg->page_alias.'.index') }}"
+                                x-on:click="sidebarOpen = false"
+                                @if ($active) data-sidebar-active @endif
+                                class="{{ $active ? 'admin-nav-item admin-nav-item--active' : 'admin-nav-item' }} !min-h-10 !py-2 !pl-3 !pr-2"
                             >
                                 @include('layouts.partials.sidebar-page-icon', ['icon' => $pg->icon])
                                 <span class="min-w-0 truncate">{{ $pg->page_name }}</span>
                             </a>
                         @endforeach
-                    @endif
-                @endforeach
-            </div>
+                    </div>
+                </div>
+            @endif
         @endif
     </nav>
 

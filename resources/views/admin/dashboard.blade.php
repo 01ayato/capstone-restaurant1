@@ -74,10 +74,12 @@
                     <x-admin-icon name="package" size="size-4" />
                     Manage Orders
                 </a>
-                <a href="{{ route('admin.menu-items.index') }}" class="admin-btn-secondary justify-start">
-                    <x-admin-icon name="utensils" size="size-4" />
-                    Menu Items
-                </a>
+                @if (auth()->user()?->isManager())
+                    <a href="{{ route('admin.menu-items.index') }}" class="admin-btn-secondary justify-start">
+                        <x-admin-icon name="utensils" size="size-4" />
+                        Menu Items
+                    </a>
+                @endif
                 <a href="{{ route('landing') }}" class="admin-btn-secondary justify-start">
                     <x-admin-icon name="external-link" size="size-4" />
                     View Website

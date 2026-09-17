@@ -32,3 +32,4 @@ class Category extends Model
         return $this->menuItems()->where('is_available', true);
     }
 }
+

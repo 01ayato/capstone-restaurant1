@@ -21,6 +21,8 @@ export function registerMenuItemsPage(Alpine) {
         editCategory: null,
         editItemOpen: false,
         editItem: null,
+        addItemOpen: false,
+        selectedCategoryId: '',
         addCategoryId: String(initial?.categories?.[0]?.id ?? ''),
         categories: initial?.categories ?? [],
         routes: initial?.routes ?? {},
@@ -34,6 +36,7 @@ export function registerMenuItemsPage(Alpine) {
             this.closeAdd();
             this.closeEdit();
             this.closeEditItem();
+            this.closeAddItem();
             this.manageOpen = true;
         },
 
@@ -44,6 +47,7 @@ export function registerMenuItemsPage(Alpine) {
         openAdd() {
             this.closeEdit();
             this.closeEditItem();
+            this.closeAddItem();
             this.addOpen = true;
         },
 
@@ -51,9 +55,21 @@ export function registerMenuItemsPage(Alpine) {
             this.addOpen = false;
         },
 
+        openAddItem() {
+            this.closeAdd();
+            this.closeEdit();
+            this.closeEditItem();
+            this.addItemOpen = true;
+        },
+
+        closeAddItem() {
+            this.addItemOpen = false;
+        },
+
         openEdit(category) {
             this.closeAdd();
             this.closeEditItem();
+            this.closeAddItem();
             this.editCategory = {
                 id: category.id,
                 name: category.name ?? '',
@@ -73,6 +89,7 @@ export function registerMenuItemsPage(Alpine) {
         openEditItem(item) {
             this.closeAdd();
             this.closeEdit();
+            this.closeAddItem();
             this.editItem = {
                 id: item.id,
                 category_id: String(item.category_id ?? ''),

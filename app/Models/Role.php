@@ -14,6 +14,8 @@ class Role extends Model
 
     public const SLUG_USER = 'user';
 
+    public const SLUG_CASHIER = 'cashier';
+
     /**
      * @var list<string>
      */

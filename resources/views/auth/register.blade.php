@@ -28,9 +28,15 @@
                         </div>
                     @endif
 
-                    <div>
-                        <label for="full_name" class="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-500">Full Name</label>
-                        <input id="full_name" name="full_name" type="text" required autofocus value="{{ old('full_name') }}" class="sg-input">
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="first_name" class="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-500">First Name</label>
+                            <input id="first_name" name="first_name" type="text" required autofocus value="{{ old('first_name') }}" class="sg-input">
+                        </div>
+                        <div>
+                            <label for="last_name" class="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-500">Last Name</label>
+                            <input id="last_name" name="last_name" type="text" required value="{{ old('last_name') }}" class="sg-input">
+                        </div>
                     </div>
 
                     <div>

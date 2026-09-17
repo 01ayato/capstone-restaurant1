@@ -197,6 +197,12 @@ class ReservationController extends Controller
                 ->withErrors(['reserved_at' => Reservation::openingHoursValidationMessage()]);
         }
 
+        if ($start->isToday() && $start->lt(now()->addHour())) {
+            return back()
+                ->withInput()
+                ->withErrors(['reserved_at' => 'Same-day reservations must be made at least 1 hour in advance.']);
+        }
+
         if ($table->isOccupied()) {
             return back()
                 ->withInput()

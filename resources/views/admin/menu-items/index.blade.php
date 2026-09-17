@@ -24,6 +24,13 @@
             >
                 Add Category
             </button>
+            <button
+                type="button"
+                class="admin-btn-accent shrink-0"
+                onclick="window.dispatchEvent(new CustomEvent('menu-items-open-add-item'))"
+            >
+                Add Food Item
+            </button>
         </div>
     </div>
 @endsection
@@ -35,76 +42,126 @@
         x-data="menuItemsPage()"
         x-on:menu-items-open-categories.window="openManage()"
         x-on:menu-items-open-add-category.window="openAdd()"
+        x-on:menu-items-open-add-item.window="openAddItem()"
         class="space-y-6"
     >
-        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 class="text-sm font-semibold text-zinc-900">Add Food Item</h2>
-            <form
-                action="{{ route('admin.menu-items.store') }}"
-                method="post"
-                enctype="multipart/form-data"
-                class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        <template x-teleport="body">
+            <div
+                x-show="addItemOpen"
+                x-cloak
+                x-transition.opacity
+                class="fixed inset-0 z-[210] flex items-center justify-center bg-[#0D2232]/50 p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="add-item-title"
+                x-on:keydown.escape.window="closeAddItem()"
+                x-on:click.self="closeAddItem()"
             >
-                @csrf
-                <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-500">Category</label>
-                    <div class="flex gap-2">
-                        <select name="category_id" required x-model="addCategoryId" class="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm">
-                            @forelse ($categories as $cat)
-                                <option value="{{ $cat->id }}" data-slug="{{ $cat->slug }}">{{ $cat->name }}</option>
-                            @empty
-                                <option value="" disabled selected>No categories yet</option>
-                            @endforelse
-                        </select>
-                        <button
-                            type="button"
-                            class="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-slate-50"
-                            title="Add category"
-                            x-on:click="openAdd()"
-                        >
-                            +
+                <div class="flex max-h-[90vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl" x-on:click.stop="">
+                    <header class="flex shrink-0 items-start justify-between gap-3 border-b border-gray-200 px-6 py-4">
+                        <div>
+                            <h2 id="add-item-title" class="text-lg font-bold text-gray-900">Add Food Item</h2>
+                            <p class="mt-1 text-sm text-gray-500">Create a new menu item and assign it to a category.</p>
+                        </div>
+                        <button type="button" class="rounded-lg p-1 text-gray-500 transition hover:bg-slate-100 hover:text-gray-700" x-on:click="closeAddItem()">
+                            <span class="sr-only">Close</span>
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
-                    </div>
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-500">Name</label>
-                    <input name="name" type="text" required class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-500">Price (₱)</label>
-                    <input name="price" type="number" step="0.01" min="0" required class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="mb-1 block text-xs font-medium text-gray-500">Description</label>
-                    <textarea name="description" rows="2" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"></textarea>
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-500">Image</label>
-                    <input name="image" type="file" accept="image/*" class="w-full text-sm">
-                </div>
-                <div class="flex items-end">
-                    <label class="flex items-center gap-2 text-sm">
-                        <input type="checkbox" name="is_available" value="1" checked> Available
-                    </label>
-                </div>
-                <template x-if="isDrinksCategory(addCategoryId)">
-                    <div class="sm:col-span-2 lg:col-span-3 grid gap-4 sm:grid-cols-2 rounded-lg border border-amber-200 bg-amber-50/60 p-4">
-                        <p class="sm:col-span-2 text-xs font-medium text-amber-800">Drinks inventory — stock is deducted when sold in POS or reserved as a preorder.</p>
-                        <div>
-                            <label class="mb-1 block text-xs font-medium text-zinc-600">Stock Level</label>
-                            <input name="stock_level" type="number" min="0" value="{{ old('stock_level', 0) }}" x-bind:required="isDrinksCategory(addCategoryId)" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
+                    </header>
+
+                    <form
+                        action="{{ route('admin.menu-items.store') }}"
+                        method="post"
+                        enctype="multipart/form-data"
+                        class="flex min-h-0 flex-1 flex-col"
+                    >
+                        @csrf
+                        <div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-medium text-gray-500">Category</label>
+                                    <div class="flex gap-2">
+                                        <select name="category_id" required x-model="addCategoryId" class="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm">
+                                            @forelse ($categories as $cat)
+                                                <option value="{{ $cat->id }}" data-slug="{{ $cat->slug }}">{{ $cat->name }}</option>
+                                            @empty
+                                                <option value="" disabled selected>No categories yet</option>
+                                            @endforelse
+                                        </select>
+                                        <button
+                                            type="button"
+                                            class="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-slate-50"
+                                            title="Add category"
+                                            x-on:click="openAdd()"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-medium text-gray-500">Name</label>
+                                    <input name="name" type="text" required class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-medium text-gray-500">Price (₱)</label>
+                                    <input name="price" type="number" step="0.01" min="0" required class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-xs font-medium text-gray-500">Image</label>
+                                    <input name="image" type="file" accept="image/*" class="w-full text-sm">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="mb-1 block text-xs font-medium text-gray-500">Description</label>
+                                    <textarea name="description" rows="2" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"></textarea>
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input type="checkbox" name="is_available" value="1" checked> Available
+                                    </label>
+                                </div>
+                                <template x-if="isDrinksCategory(addCategoryId)">
+                                    <div class="sm:col-span-2 grid gap-4 sm:grid-cols-2 rounded-lg border border-amber-200 bg-amber-50/60 p-4">
+                                        <p class="sm:col-span-2 text-xs font-medium text-amber-800">Drinks inventory — stock is deducted when sold in POS or reserved as a preorder.</p>
+                                        <div>
+                                            <label class="mb-1 block text-xs font-medium text-zinc-600">Stock Level</label>
+                                            <input name="stock_level" type="number" min="0" value="{{ old('stock_level', 0) }}" x-bind:required="isDrinksCategory(addCategoryId)" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-xs font-medium text-zinc-600">Reorder Level</label>
+                                            <input name="reorder_level" type="number" min="0" value="{{ old('reorder_level', 5) }}" x-bind:required="isDrinksCategory(addCategoryId)" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
+                                            <p class="mt-1 text-[11px] text-zinc-500">Alert when stock falls to this level or below.</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
-                        <div>
-                            <label class="mb-1 block text-xs font-medium text-zinc-600">Reorder Level</label>
-                            <input name="reorder_level" type="number" min="0" value="{{ old('reorder_level', 5) }}" x-bind:required="isDrinksCategory(addCategoryId)" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
-                            <p class="mt-1 text-[11px] text-zinc-500">Alert when stock falls to this level or below.</p>
-                        </div>
-                    </div>
-                </template>
-                <div class="sm:col-span-2 lg:col-span-3">
-                    <button type="submit" class="admin-btn-primary">Add Item</button>
+                        <footer class="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-gray-200 bg-slate-50 px-6 py-4">
+                            <button type="button" class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-slate-50" x-on:click="closeAddItem()">
+                                Cancel
+                            </button>
+                            <button type="submit" class="rounded-lg bg-[#0D2232] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#16364D]">
+                                Add Item
+                            </button>
+                        </footer>
+                    </form>
                 </div>
-            </form>
+            </div>
+        </template>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <label for="menu-category-filter" class="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Filter by Category</label>
+            <select
+                id="menu-category-filter"
+                x-model="selectedCategoryId"
+                class="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-zinc-400 focus:outline-none"
+            >
+                <option value="">All Categories</option>
+                @foreach ($categories as $cat)
+                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                @endforeach
+            </select>
         </div>
 
         <div class="admin-table-shell overflow-x-auto lg:overflow-visible">
@@ -121,7 +178,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @foreach ($menuItems as $item)
-                        <tr>
+                        <tr x-show="selectedCategoryId === '' || selectedCategoryId === '{{ $item->category_id }}'">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <img src="{{ $item->imageUrl() }}" alt="" class="size-10 rounded-lg object-cover">

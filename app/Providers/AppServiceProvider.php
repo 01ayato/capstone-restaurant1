@@ -60,6 +60,12 @@ class AppServiceProvider extends ServiceProvider
             if ($user !== null && ! $user->isSuperadmin()) {
                 $modules = $modules
                     ->filter(function (Module $module) use ($user) {
+                        // Front of House must always render for staff, so never drop the
+                        // Smoke n' Grill module for admin/cashier regardless of module_role rows.
+                        if ($module->alias === 'smoke_n_grill' && $user->isStaff()) {
+                            return true;
+                        }
+
                         if ($module->roles->isEmpty()) {
                             return false;
                         }
@@ -75,6 +81,12 @@ class AppServiceProvider extends ServiceProvider
 
                 $modules = $modules
                     ->map(function (Module $module) use ($user) {
+                        // Smoke n' Grill pages are grouped and role-gated in the sidebar itself,
+                        // so let staff (admin/cashier) see all of them here.
+                        if ($module->alias === 'smoke_n_grill' && $user->isStaff()) {
+                            return $module;
+                        }
+
                         $filteredPages = $module->pages->filter(function (Page $page) use ($user) {
                             if ($page->roles->isEmpty()) {
                                 return false;

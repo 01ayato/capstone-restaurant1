@@ -106,6 +106,20 @@ class User extends Authenticatable
         return $this->hasRoleSlug(Role::SLUG_ADMIN);
     }
 
+    public function isCashier(): bool
+    {
+        return $this->hasRoleSlug(Role::SLUG_CASHIER);
+    }
+
+    /**
+     * Management-level roles (admin + superadmin) get full access to the
+     * Management and User Settings areas. Cashiers are excluded.
+     */
+    public function isManager(): bool
+    {
+        return in_array($this->role?->slug, [Role::SLUG_ADMIN, Role::SLUG_SUPERADMIN], true);
+    }
+
     public function isUserRole(): bool
     {
         return $this->hasRoleSlug(Role::SLUG_USER);
@@ -113,7 +127,7 @@ class User extends Authenticatable
 
     public function isStaff(): bool
     {
-        return $this->isSuperadmin() || $this->isAdmin();
+        return $this->isSuperadmin() || $this->isAdmin() || $this->isCashier();
     }
 
     /**

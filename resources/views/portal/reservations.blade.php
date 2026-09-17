@@ -187,6 +187,10 @@
                                         That time is outside opening hours ({{ $openingHoursLabel }}). Please pick another time.
                                     </div>
 
+                                    <div x-show="reservedAt && withinOpeningHours && sameDayTooSoon()" x-cloak class="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-300">
+                                        Same-day reservations must be made at least 1 hour in advance. Please pick a later time or choose a future date.
+                                    </div>
+
                                     <div>
                                         <label class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Area</label>
                                         <select x-model="selectedGroupId" x-on:change="onGroupChange()" class="sg-input w-full">

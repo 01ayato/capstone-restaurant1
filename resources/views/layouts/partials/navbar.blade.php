@@ -67,11 +67,22 @@
                 <i class="fa-solid fa-sun text-sm text-orange-500 dark:text-orange-300" x-show="dark" x-cloak aria-hidden="true"></i>
             </button>
 
+            @php
+                $roleSlug = auth()->user()->role?->slug;
+                $roleBadge = [
+                    'admin' => ['label' => 'Admin', 'class' => 'bg-blue-100 text-blue-700 ring-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-500/30'],
+                    'cashier' => ['label' => 'Cashier', 'class' => 'bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30'],
+                    'superadmin' => ['label' => 'Superadmin', 'class' => 'bg-violet-100 text-violet-700 ring-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:ring-violet-500/30'],
+                ][$roleSlug] ?? ['label' => ucfirst($roleSlug ?? 'User'), 'class' => 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10'];
+            @endphp
             <span
                 class="hidden max-w-48 truncate rounded-full px-3 py-1.5 text-xs font-medium ring-1 sm:inline sm:max-w-xs"
                 style="background: var(--admin-chrome-btn); color: var(--admin-chrome-muted); box-shadow: inset 0 0 0 1px var(--admin-chrome-border)"
             >
                 {{ auth()->user()->email }}
+            </span>
+            <span class="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 {{ $roleBadge['class'] }}">
+                {{ $roleBadge['label'] }}
             </span>
             <form
                 action="{{ route('logout') }}"
