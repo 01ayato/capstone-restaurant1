@@ -35,8 +35,8 @@
                 'reservations' => 'admin.reservations.*',
                 'sales_reports' => 'admin.reports.*',
                 'restaurant_info' => 'admin.settings.*',
+                'feedback' => 'admin.feedback.*',
             ];
-
             $smokeModule = $sidebarModules->firstWhere('alias', 'smoke_n_grill');
             $userSettingsModule = $sidebarModules->firstWhere('alias', 'user_settings');
             $otherModules = $sidebarModules->reject(
@@ -44,7 +44,7 @@
             );
 
             $frontOfHouseAliases = ['pos', 'orders', 'reservations', 'customers', 'view_website'];
-            $managementAliases = ['menu_items', 'sales_reports', 'restaurant_info', 'tables_configurations'];
+            $managementAliases = ['menu_items', 'sales_reports', 'restaurant_info', 'tables_configurations', 'feedback'];
 
             $routablePages = $smokeModule
                 ? $smokeModule->pages->filter(fn ($pg) => Route::has('page.smoke_n_grill.'.$pg->page_alias.'.index'))->values()

@@ -26,6 +26,8 @@ export function registerMenuItemsPage(Alpine) {
         addCategoryId: String(initial?.categories?.[0]?.id ?? ''),
         categories: initial?.categories ?? [],
         routes: initial?.routes ?? {},
+        signatureCount: Number(initial?.signatureCount ?? 0),
+        maxSignatureItems: Number(initial?.maxSignatureItems ?? 4),
 
         isDrinksCategory(categoryId) {
             const category = this.categories.find((c) => String(c.id) === String(categoryId));
@@ -97,6 +99,8 @@ export function registerMenuItemsPage(Alpine) {
                 price: item.price ?? '',
                 description: item.description ?? '',
                 is_available: Boolean(item.is_available),
+                is_signature: Boolean(item.is_signature),
+                is_signature_original: Boolean(item.is_signature),
                 stock_level: item.stock_level ?? 0,
                 reorder_level: item.reorder_level ?? 5,
                 image_url: item.image_url ?? '',
@@ -131,6 +135,39 @@ export function registerMenuItemsPage(Alpine) {
             }
 
             return `${this.routes.destroyBase}/${categoryId}`;
+        },
+
+        /**
+         * Blocks checking the "Signature dish" checkbox once the limit is reached.
+         */
+        guardSignatureToggle(event, wasAlreadySignature) {
+            if (!event.target.checked || wasAlreadySignature) {
+                return;
+            }
+
+            if (this.signatureCount >= this.maxSignatureItems) {
+                event.target.checked = false;
+                if (this.editItem) {
+                    this.editItem.is_signature = false;
+                }
+                window.toast?.error?.(
+                    `You can only select up to ${this.maxSignatureItems} signature dishes. Please unselect one first.`
+                );
+            }
+        },
+
+        /**
+         * Star-icon quick toggle in the table; submits the PATCH form unless the limit is hit.
+         */
+        toggleSignature(event, isCurrentlySignature) {
+            if (!isCurrentlySignature && this.signatureCount >= this.maxSignatureItems) {
+                window.toast?.error?.(
+                    `You can only select up to ${this.maxSignatureItems} signature dishes. Please unselect one first.`
+                );
+                return;
+            }
+
+            event.target.submit();
         },
 
         async confirmDelete(category) {

@@ -43,6 +43,13 @@
                                 @endforeach
                             </ul>
                             <p class="mt-4 text-right text-lg font-bold text-gray-900">Total: {{ $order->formattedTotal() }}</p>
+                            @if ($order->status === \App\Models\Order::STATUS_COMPLETED)
+                                <div class="mt-3 text-right">
+                                    <a href="{{ route('feedback.create') }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-600 hover:text-orange-500">
+                                        <i class="fa-solid fa-star text-xs" aria-hidden="true"></i> Leave a Review
+                                    </a>
+                                </div>
+                            @endif
                         </article>
                     @endforeach
                 </div>

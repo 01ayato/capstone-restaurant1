@@ -12,6 +12,7 @@ import { registerPortalReservationsPage } from './portal-reservations-page';
 import { registerPortalMyReservationsPage } from './portal-my-reservations-page';
 import { registerPortalPaymentOcr } from './portal-payment-ocr';
 import { registerPortalMenu } from './portal-menu';
+import { registerPortalCartPage } from './portal-cart-page';
 
 function registerAlpineComponents() {
     registerUserAccountsPage(Alpine);
@@ -26,6 +27,7 @@ function registerAlpineComponents() {
     registerPortalMyReservationsPage(Alpine);
     registerPortalPaymentOcr(Alpine);
     registerPortalMenu(Alpine);
+    registerPortalCartPage(Alpine);
 }
 
 registerAlpineComponents();

@@ -18,6 +18,7 @@ class MenuItemController extends Controller
     {
         $menuItems = MenuItem::query()->with('category')->orderBy('category_id')->orderBy('sort_order')->get();
         $categories = Category::query()->withCount('menuItems')->orderBy('sort_order')->get();
+        $signatureCount = $menuItems->where('is_signature', true)->count();
 
         $menuPageInitial = [
             'categories' => $categories->map(fn (Category $category) => [
@@ -29,20 +30,28 @@ class MenuItemController extends Controller
                 'is_active' => $category->is_active,
                 'menu_items_count' => $category->menu_items_count,
             ])->values()->all(),
+            'signatureCount' => $signatureCount,
+            'maxSignatureItems' => MenuItem::MAX_SIGNATURE_ITEMS,
             'routes' => [
                 'store' => route('admin.categories.store'),
                 'updateBase' => url('admin/categories'),
                 'destroyBase' => url('admin/categories'),
                 'itemUpdateBase' => url('admin/menu-items'),
+                'itemSignatureBase' => url('admin/menu-items'),
             ],
         ];
 
-        return view('admin.menu-items.index', compact('menuItems', 'categories', 'menuPageInitial'));
+        return view('admin.menu-items.index', compact('menuItems', 'categories', 'menuPageInitial', 'signatureCount'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validateItem($request);
+
+        if ($validated['is_signature'] && ! $this->canFeature()) {
+            return back()->withInput()->with('error', $this->signatureLimitMessage());
+        }
+
         $validated['slug'] = Str::slug($validated['name']).'-'.Str::random(4);
 
         if ($request->hasFile('image')) {
@@ -58,6 +67,10 @@ class MenuItemController extends Controller
     {
         $validated = $this->validateItem($request, $menuItem->id);
 
+        if ($validated['is_signature'] && ! $menuItem->is_signature && ! $this->canFeature()) {
+            return back()->withInput()->with('error', $this->signatureLimitMessage());
+        }
+
         if ($request->hasFile('image')) {
             $this->deleteImage($menuItem->image);
             $validated['image'] = $this->storeImage($request->file('image'));
@@ -68,12 +81,36 @@ class MenuItemController extends Controller
         return back()->with('success', 'Menu item updated.');
     }
 
+    /**
+     * Quick star-toggle for the "Featured" column (used on the Home page's Signature Dishes section).
+     */
+    public function toggleSignature(MenuItem $menuItem): RedirectResponse
+    {
+        if (! $menuItem->is_signature && ! $this->canFeature()) {
+            return back()->with('error', $this->signatureLimitMessage());
+        }
+
+        $menuItem->update(['is_signature' => ! $menuItem->is_signature]);
+
+        return back()->with('success', $menuItem->is_signature ? 'Added to Signature Dishes.' : 'Removed from Signature Dishes.');
+    }
+
     public function destroy(MenuItem $menuItem): RedirectResponse
     {
         $this->deleteImage($menuItem->image);
         $menuItem->delete();
 
         return back()->with('success', 'Menu item deleted.');
+    }
+
+    private function canFeature(): bool
+    {
+        return MenuItem::query()->where('is_signature', true)->count() < MenuItem::MAX_SIGNATURE_ITEMS;
+    }
+
+    private function signatureLimitMessage(): string
+    {
+        return 'You can only select up to '.MenuItem::MAX_SIGNATURE_ITEMS.' signature dishes. Please unselect one first.';
     }
 
     private function storeImage(UploadedFile $file): string
@@ -120,12 +157,14 @@ class MenuItemController extends Controller
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'numeric', 'min:0'],
             'is_available' => ['nullable', 'boolean'],
+            'is_signature' => ['nullable', 'boolean'],
             'stock_level' => ['nullable', 'integer', 'min:0'],
             'reorder_level' => ['nullable', 'integer', 'min:0'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],
         ]) + [
             'is_available' => $request->boolean('is_available'),
+            'is_signature' => $request->boolean('is_signature'),
             'sort_order' => $request->input('sort_order', 0),
         ];
 

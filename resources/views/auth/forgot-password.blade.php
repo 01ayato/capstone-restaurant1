@@ -26,13 +26,16 @@
                     Enter your email to reset your password
                 </p>
 
+            @if (session('success'))
                 <div
-                    class="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                    class="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
                     role="status"
                 >
-                    Debug mode — no email is sent. You will go straight to the reset form.
+                    {{ session('success') }}
                 </div>
+            @endif
 
+            @if (! session('success'))
                 <form action="{{ route('password.email') }}" method="post" class="mt-8 space-y-6">
                     @csrf
 
@@ -63,6 +66,7 @@
                         Continue
                     </button>
                 </form>
+            @endif
 
                 <p class="mt-10 text-center text-sm text-zinc-500">
                     Remember your password?

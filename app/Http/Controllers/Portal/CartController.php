@@ -8,6 +8,7 @@ use App\Models\RestaurantSetting;
 use App\Services\CartService;
 use App\Services\TableSessionService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -53,7 +54,7 @@ class CartController extends Controller
         return back()->with('success', "{$item->name} added to cart.");
     }
 
-    public function update(Request $request, CartService $cart): RedirectResponse
+    public function update(Request $request, CartService $cart): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'menu_item_id' => ['required', 'integer'],
@@ -61,11 +62,24 @@ class CartController extends Controller
             'instructions' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $cart->update(
-            (int) $validated['menu_item_id'],
-            (int) $validated['quantity'],
-            $validated['instructions'] ?? '',
-        );
+        $menuItemId = (int) $validated['menu_item_id'];
+        $quantity = (int) $validated['quantity'];
+
+        $cart->update($menuItemId, $quantity, $validated['instructions'] ?? '');
+
+        if ($request->wantsJson()) {
+            $line = $cart->items()->firstWhere('item.id', $menuItemId);
+
+            return response()->json([
+                'removed' => $quantity <= 0 || $line === null,
+                'quantity' => $line?->quantity ?? 0,
+                'line_total' => $line?->line_total ?? 0.0,
+                'subtotal' => $cart->subtotal(),
+                'delivery_fee' => $cart->deliveryFee(),
+                'total' => $cart->total(),
+                'cart_count' => $cart->count(),
+            ]);
+        }
 
         return redirect()->route('cart.index')->with('success', 'Cart updated.');
     }

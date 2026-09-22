@@ -3,12 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Mail\PasswordResetMail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 
 class User extends Authenticatable
 {
@@ -152,6 +154,41 @@ class User extends Authenticatable
     public function emailVerificationCodes(): HasMany
     {
         return $this->hasMany(EmailVerificationCode::class);
+    }
+
+    /**
+     * Send the password reset link via Brevo instead of Laravel's default notification mailable.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        Mail::to($this->email)->send(new PasswordResetMail($this, $token));
+    }
+
+    /**
+     * @return HasMany<Feedback, $this>
+     */
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
+    }
+
+    public function hasCompletedOrder(): bool
+    {
+        return $this->orders()->where('status', Order::STATUS_COMPLETED)->exists();
+    }
+
+    public function hasCompletedReservation(): bool
+    {
+        return $this->reservations()->where('status', Reservation::STATUS_COMPLETED)->exists();
+    }
+
+    /**
+     * Eligible to leave feedback once they have an account and at least one
+     * completed order or reservation (either one qualifies).
+     */
+    public function canLeaveFeedback(): bool
+    {
+        return $this->hasCompletedOrder() || $this->hasCompletedReservation();
     }
 
     /**

@@ -96,7 +96,7 @@
                 </form>
 
                 <p class="mt-10 text-center text-sm text-zinc-500">
-                    <a href="{{ route('home') }}" class="font-semibold text-indigo-600 hover:text-indigo-500">
+                    <a href="{{ route('login') }}" class="font-semibold text-indigo-600 hover:text-indigo-500">
                         Back to sign in
                     </a>
                 </p>

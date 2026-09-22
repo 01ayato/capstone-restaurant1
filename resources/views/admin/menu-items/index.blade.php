@@ -116,11 +116,20 @@
                                     <label class="mb-1 block text-xs font-medium text-gray-500">Description</label>
                                     <textarea name="description" rows="2" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"></textarea>
                                 </div>
-                                <div class="flex items-end">
+                                <div class="flex items-end gap-4">
                                     <label class="flex items-center gap-2 text-sm">
                                         <input type="checkbox" name="is_available" value="1" checked> Available
                                     </label>
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            name="is_signature"
+                                            value="1"
+                                            x-on:change="guardSignatureToggle($event, false)"
+                                        > Signature dish
+                                    </label>
                                 </div>
+                                <p class="sm:col-span-2 -mt-2 text-[11px] text-zinc-500" x-text="signatureCount + ' of ' + maxSignatureItems + ' signature dishes selected'"></p>
                                 <template x-if="isDrinksCategory(addCategoryId)">
                                     <div class="sm:col-span-2 grid gap-4 sm:grid-cols-2 rounded-lg border border-amber-200 bg-amber-50/60 p-4">
                                         <p class="sm:col-span-2 text-xs font-medium text-amber-800">Drinks inventory — stock is deducted when sold in POS or reserved as a preorder.</p>
@@ -173,6 +182,7 @@
                         <th class="px-4 py-3 text-left font-semibold text-zinc-600">Price</th>
                         <th class="px-4 py-3 text-left font-semibold text-zinc-600">Stock</th>
                         <th class="px-4 py-3 text-left font-semibold text-zinc-600">Status</th>
+                        <th class="px-4 py-3 text-center font-semibold text-zinc-600">Featured</th>
                         <th class="px-4 py-3 text-right font-semibold text-zinc-600">Actions</th>
                     </tr>
                 </thead>
@@ -205,6 +215,23 @@
                                     {{ $item->is_available ? 'Available' : 'Unavailable' }}
                                 </span>
                             </td>
+                            <td class="px-4 py-3 text-center">
+                                <form
+                                    action="{{ route('admin.menu-items.signature', $item) }}"
+                                    method="post"
+                                    x-on:submit.prevent="toggleSignature($event, {{ $item->is_signature ? 'true' : 'false' }})"
+                                >
+                                    @csrf @method('PATCH')
+                                    <button
+                                        type="submit"
+                                        class="inline-flex size-8 items-center justify-center rounded-lg border transition {{ $item->is_signature ? 'border-amber-300 bg-amber-50 text-amber-500' : 'border-gray-200 text-gray-300 hover:border-amber-200 hover:text-amber-400' }}"
+                                        title="{{ $item->is_signature ? 'Remove from Signature Dishes' : 'Mark as Signature dish' }}"
+                                    >
+                                        <i class="fa-solid fa-star text-sm" aria-hidden="true"></i>
+                                        <span class="sr-only">Toggle signature dish</span>
+                                    </button>
+                                </form>
+                            </td>
                             <td class="px-4 py-3 text-right">
                                 <button
                                     type="button"
@@ -216,6 +243,7 @@
                                         'price' => (float) $item->price,
                                         'description' => $item->description,
                                         'is_available' => $item->is_available,
+                                        'is_signature' => $item->is_signature,
                                         'stock_level' => $item->stock_level,
                                         'reorder_level' => $item->reorder_level,
                                         'image_url' => $item->imageUrl(),
@@ -513,10 +541,22 @@
                                 </div>
                                 <input id="edit-item-image" name="image" type="file" accept="image/*" class="w-full text-sm">
                             </div>
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="hidden" name="is_available" x-bind:value="editItem.is_available ? 1 : 0">
-                                <input type="checkbox" value="1" x-model="editItem.is_available"> Available
-                            </label>
+                            <div class="flex flex-wrap items-center gap-4">
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="hidden" name="is_available" x-bind:value="editItem.is_available ? 1 : 0">
+                                    <input type="checkbox" value="1" x-model="editItem.is_available"> Available
+                                </label>
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="hidden" name="is_signature" x-bind:value="editItem.is_signature ? 1 : 0">
+                                    <input
+                                        type="checkbox"
+                                        value="1"
+                                        x-model="editItem.is_signature"
+                                        x-on:change="guardSignatureToggle($event, editItem.is_signature_original)"
+                                    > Signature dish
+                                </label>
+                            </div>
+                            <p class="-mt-2 text-[11px] text-zinc-500" x-text="signatureCount + ' of ' + maxSignatureItems + ' signature dishes selected'"></p>
                             <div
                                 x-show="isDrinksCategory(editItem.category_id)"
                                 x-cloak

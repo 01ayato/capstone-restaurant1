@@ -31,25 +31,60 @@
             <div class="text-center">
                 <p class="text-xs font-bold uppercase tracking-widest text-orange-500">Our Menu</p>
                 <h2 class="portal-heading mt-2 font-display text-3xl font-bold sm:text-4xl">Signature Dishes</h2>
-                <p class="portal-muted mx-auto mt-3 max-w-xl">Handcrafted grilled favorites, burgers, seafood, and refreshing drinks.</p>
+                <p class="portal-muted mx-auto mt-3 max-w-xl">A few guest favorites, handpicked from our full menu.</p>
             </div>
 
-            @foreach ($categories as $category)
-                @if ($category->availableMenuItems->isNotEmpty())
-                    <div class="mt-12 sm:mt-14">
-                        <h3 class="portal-heading mb-6 flex items-center gap-3 font-display text-xl font-semibold sm:text-2xl">
-                            <span class="h-px flex-1 bg-gradient-to-r from-orange-300 to-transparent dark:from-orange-400/50"></span>
-                            {{ $category->name }}
-                            <span class="h-px flex-1 bg-gradient-to-l from-orange-300 to-transparent dark:from-orange-400/50"></span>
-                        </h3>
-                        <div class="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-                            @foreach ($category->availableMenuItems as $item)
-                                @include('portal.partials.menu-card', ['item' => $item])
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-            @endforeach
+            @if ($signatureDishes->isNotEmpty())
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+                    @foreach ($signatureDishes as $item)
+                        @include('portal.partials.menu-card', ['item' => $item])
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="mt-10 text-center">
+                <a href="{{ route('menu.index') }}" class="inline-flex items-center gap-2 rounded-[10px] border border-[#E8E3DB] bg-white px-6 py-3 text-sm font-semibold text-[#0D2232] shadow-sm transition hover:bg-[#F3F0EB] dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
+                    <i class="fa-solid fa-utensils" aria-hidden="true"></i> View Full Menu
+                </a>
+            </div>
         </div>
     </section>
+
+    @guest
+        @if ($reviews->isNotEmpty())
+            <section id="reviews" class="border-t border-[#E8E3DB] px-4 py-14 sm:px-6 sm:py-16 lg:px-8 dark:border-white/10">
+                <div class="mx-auto max-w-7xl">
+                    <div class="text-center">
+                        <p class="text-xs font-bold uppercase tracking-widest text-orange-500">Testimonials</p>
+                        <h2 class="portal-heading mt-2 font-display text-3xl font-bold sm:text-4xl">Customer Reviews</h2>
+                        <p class="portal-muted mx-auto mt-3 max-w-xl">What our guests are saying about their experience.</p>
+                    </div>
+
+                    <div class="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+                        @foreach ($reviews as $review)
+                            <div class="portal-card p-6">
+                                <p class="text-amber-500">
+                                    {{ str_repeat('★', $review->rating) }}<span class="text-gray-300">{{ str_repeat('★', 5 - $review->rating) }}</span>
+                                </p>
+                                @if ($review->comment)
+                                    <p class="portal-muted mt-3 text-sm leading-6">"{{ $review->comment }}"</p>
+                                @endif
+                                <p class="portal-heading mt-4 text-sm font-semibold">
+                                    {{ $review->user?->name ? \App\Support\NameMask::mask($review->user->name) : 'Guest' }}
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if ($totalApprovedReviews > $reviews->count())
+                        <div class="mt-10 text-center">
+                            <a href="{{ route('reviews.index') }}" class="inline-flex items-center gap-2 rounded-[10px] border border-[#E8E3DB] bg-white px-6 py-3 text-sm font-semibold text-[#0D2232] shadow-sm transition hover:bg-[#F3F0EB] dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
+                                View All Reviews <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </section>
+        @endif
+    @endguest
 @endsection

@@ -6,8 +6,6 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password as PasswordBroker;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -151,27 +149,11 @@ Route::post('/forgot-password', function (Request $request) {
         'email' => ['required', 'string', 'email'],
     ]);
 
-    $user = User::query()->where('email', $validated['email'])->first();
+    // Always attempt the send; the broker silently no-ops for unknown emails.
+    // Anti-enumeration: the response is identical whether the email exists or not.
+    PasswordBroker::sendResetLink($validated);
 
-    if (! $user) {
-        return back()
-            ->withErrors(['email' => __('passwords.user')])
-            ->onlyInput('email');
-    }
-
-    $token = Str::random(64);
-
-    DB::table('password_reset_tokens')->updateOrInsert(
-        ['email' => $user->email],
-        [
-            'token' => Hash::make($token),
-            'created_at' => now(),
-        ]
-    );
-
-    return redirect()
-        ->route('password.reset', ['token' => $token, 'email' => $user->email])
-        ->with('info', __('Debug mode: no email sent. Set your new password below.'));
+    return back()->with('success', __('If this email is registered, a reset link has been sent.'));
 })->middleware('throttle:6,1')->name('password.email');
 
 Route::get('/reset-password/{token}', function (Request $request, string $token) {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\ReportController;
@@ -10,16 +11,19 @@ use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\RestaurantSettingController;
 use App\Http\Controllers\Portal\CartController;
 use App\Http\Controllers\Portal\CheckoutController;
+use App\Http\Controllers\Portal\FeedbackController as PortalFeedbackController;
 use App\Http\Controllers\Portal\LandingController;
 use App\Http\Controllers\Portal\MenuController;
 use App\Http\Controllers\Portal\OrderController;
 use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\Portal\ReservationController as PortalReservationController;
+use App\Http\Controllers\Portal\ReviewsController;
 use App\Http\Controllers\Portal\SitController;
 use App\Http\Middleware\EnsureStaff;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/reviews', [ReviewsController::class, 'index'])->name('reviews.index');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 
 Route::get('/sit/lookup', [SitController::class, 'lookup'])->name('sit.lookup');
@@ -51,6 +55,9 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/reservations/scan-payment-proof', [PortalReservationController::class, 'scanPaymentProof'])->name('reservations.scan-payment-proof');
     Route::post('/reservations', [PortalReservationController::class, 'store'])->name('reservations.store');
     Route::patch('/reservations/{reservation}/cancel', [PortalReservationController::class, 'cancel'])->name('reservations.cancel');
+
+    Route::get('/feedback', [PortalFeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback', [PortalFeedbackController::class, 'store'])->name('feedback.store');
 });
 
 Route::middleware(['auth', EnsureStaff::class])->group(function (): void {
@@ -60,6 +67,7 @@ Route::middleware(['auth', EnsureStaff::class])->group(function (): void {
         Route::get('/menu-items', [MenuItemController::class, 'index'])->name('menu-items.index');
         Route::post('/menu-items', [MenuItemController::class, 'store'])->name('menu-items.store');
         Route::put('/menu-items/{menuItem}', [MenuItemController::class, 'update'])->name('menu-items.update');
+        Route::patch('/menu-items/{menuItem}/signature', [MenuItemController::class, 'toggleSignature'])->name('menu-items.signature');
         Route::delete('/menu-items/{menuItem}', [MenuItemController::class, 'destroy'])->name('menu-items.destroy');
 
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
@@ -86,5 +94,10 @@ Route::middleware(['auth', EnsureStaff::class])->group(function (): void {
 
         Route::get('/settings', [RestaurantSettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [RestaurantSettingController::class, 'update'])->name('settings.update');
+
+        Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+        Route::patch('/feedback/{feedback}/status', [FeedbackController::class, 'updateStatus'])->name('feedback.status');
+        Route::post('/feedback/{feedback}/contact', [FeedbackController::class, 'contact'])->name('feedback.contact');
+        Route::delete('/feedback/{feedback}', [FeedbackController::class, 'destroy'])->name('feedback.destroy');
     });
 });

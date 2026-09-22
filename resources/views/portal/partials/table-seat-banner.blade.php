@@ -72,7 +72,7 @@
     <template x-teleport="body">
         <div x-show="open" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-4 pt-20 sm:pt-4">
             <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" x-on:click="closeModal()"></div>
-            <div class="relative z-[201] flex max-h-[min(92vh,calc(100dvh-5rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+            <div class="relative z-[201] flex max-h-[min(92vh,calc(100dvh-5rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl md:max-w-4xl lg:max-w-5xl">
             <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4">
                 <h2 class="font-display text-lg font-bold text-gray-900">Select your table</h2>
                 <button type="button" class="flex size-9 items-center justify-center rounded-lg text-gray-500 hover:bg-slate-50 hover:text-gray-900" x-on:click="closeModal()">
@@ -119,44 +119,46 @@
                                 <span class="ml-auto text-[10px] text-gray-500">Live · refreshes every few seconds</span>
                             </div>
 
-                            <template x-if="selectedGroup()?.map_image_url">
-                                <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-black">
-                                    <img x-bind:src="selectedGroup()?.map_image_url" alt="Floor map" class="block w-full select-none">
-                                    <template x-for="table in (selectedGroup()?.tables ?? []).filter(t => t.is_placed_on_map)" :key="'pick-map-' + table.id">
-                                        <button
-                                            type="button"
-                                            class="absolute flex size-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-xs font-bold text-gray-900 shadow-lg transition"
-                                            x-bind:class="[mapMarkerClass(table), isTableSelectable(table) ? 'hover:scale-110' : 'cursor-not-allowed opacity-60']"
-                                            x-bind:style="mapMarkerStyle(table)"
-                                            x-bind:disabled="!isTableSelectable(table)"
-                                            x-on:click="selectTable(table)"
-                                            x-text="table.table_number"
-                                            x-bind:title="'Table ' + table.table_number + ' — ' + tableStatusLabel(table)"
-                                        ></button>
-                                    </template>
-                                </div>
-                            </template>
+                            <div class="md:grid md:grid-cols-2 md:items-start md:gap-6">
+                                <template x-if="selectedGroup()?.map_image_url">
+                                    <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-black">
+                                        <img x-bind:src="selectedGroup()?.map_image_url" alt="Floor map" class="block w-full select-none">
+                                        <template x-for="table in (selectedGroup()?.tables ?? []).filter(t => t.is_placed_on_map)" :key="'pick-map-' + table.id">
+                                            <button
+                                                type="button"
+                                                class="absolute flex size-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-xs font-bold text-gray-900 shadow-lg transition"
+                                                x-bind:class="[mapMarkerClass(table), isTableSelectable(table) ? 'hover:scale-110' : 'cursor-not-allowed opacity-60']"
+                                                x-bind:style="mapMarkerStyle(table)"
+                                                x-bind:disabled="!isTableSelectable(table)"
+                                                x-on:click="selectTable(table)"
+                                                x-text="table.table_number"
+                                                x-bind:title="'Table ' + table.table_number + ' — ' + tableStatusLabel(table)"
+                                            ></button>
+                                        </template>
+                                    </div>
+                                </template>
 
-                            <div>
-                                <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">Tap your table</label>
-                                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                                    <template x-for="table in (selectedGroup()?.tables ?? [])" :key="'pick-grid-' + table.id">
-                                        <button
-                                            type="button"
-                                            class="rounded-xl border p-3 text-left transition"
-                                            x-bind:class="tableStatusClass(table)"
-                                            x-bind:disabled="!isTableSelectable(table)"
-                                            x-on:click="selectTable(table)"
-                                        >
-                                            <p class="text-sm font-bold text-gray-900">Table <span x-text="table.table_number"></span></p>
-                                            <p class="mt-0.5 text-xs text-gray-500"><span x-text="table.chair_count"></span> chairs</p>
-                                            <p
-                                                class="mt-1 text-[10px] font-semibold uppercase"
-                                                x-bind:class="table.is_full ? 'text-red-600' : (table.is_occupied ? 'text-orange-600' : 'text-emerald-600')"
-                                                x-text="tableStatusLabel(table)"
-                                            ></p>
-                                        </button>
-                                    </template>
+                                <div class="mt-4 md:mt-0" x-bind:class="selectedGroup()?.map_image_url ? '' : 'md:col-span-2'">
+                                    <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">Tap your table</label>
+                                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-2">
+                                        <template x-for="table in (selectedGroup()?.tables ?? [])" :key="'pick-grid-' + table.id">
+                                            <button
+                                                type="button"
+                                                class="rounded-xl border p-3 text-left transition"
+                                                x-bind:class="tableStatusClass(table)"
+                                                x-bind:disabled="!isTableSelectable(table)"
+                                                x-on:click="selectTable(table)"
+                                            >
+                                                <p class="text-sm font-bold text-gray-900">Table <span x-text="table.table_number"></span></p>
+                                                <p class="mt-0.5 text-xs text-gray-500"><span x-text="table.chair_count"></span> chairs</p>
+                                                <p
+                                                    class="mt-1 text-[10px] font-semibold uppercase"
+                                                    x-bind:class="table.is_full ? 'text-red-600' : (table.is_occupied ? 'text-orange-600' : 'text-emerald-600')"
+                                                    x-text="tableStatusLabel(table)"
+                                                ></p>
+                                            </button>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
 

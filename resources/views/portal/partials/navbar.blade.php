@@ -22,6 +22,7 @@
                     <a href="{{ route('orders.index') }}" class="portal-nav-link {{ request()->routeIs('orders.*') ? 'portal-nav-link--active' : '' }}">My Orders</a>
                     <a href="{{ route('reservations.index') }}" class="portal-nav-link {{ request()->routeIs('reservations.index') ? 'portal-nav-link--active' : '' }}">Reserve</a>
                     <a href="{{ route('reservations.mine') }}" class="portal-nav-link {{ request()->routeIs('reservations.mine') ? 'portal-nav-link--active' : '' }}">My Reservation</a>
+                    <a href="{{ route('feedback.create') }}" class="portal-nav-link {{ request()->routeIs('feedback.*') ? 'portal-nav-link--active' : '' }}">Feedback</a>
                     <a href="{{ route('profile.show') }}" class="portal-nav-link {{ request()->routeIs('profile.*') ? 'portal-nav-link--active' : '' }}">Profile</a>
                 @endif
             @else

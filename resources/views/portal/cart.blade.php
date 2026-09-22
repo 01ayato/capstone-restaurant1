@@ -19,29 +19,63 @@
                     </a>
                 </div>
             @else
+                <script type="application/json" id="portal-cart-initial">@json(['subtotal' => $subtotal, 'deliveryFee' => $deliveryFee, 'total' => $total])</script>
+
                 <div class="mt-8 space-y-4">
                     @foreach ($cartItems as $line)
-                        <div class="rounded-2xl border border-gray-200 bg-white p-5 backdrop-blur-sm">
-                            <form action="{{ route('cart.update') }}" method="post" class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                @csrf
-                                <input type="hidden" name="menu_item_id" value="{{ $line->item->id }}">
+                        <div
+                            class="rounded-2xl border border-gray-200 bg-white p-5 backdrop-blur-sm"
+                            x-data="cartLineItem({{ json_encode([
+                                'id' => $line->item->id,
+                                'quantity' => $line->quantity,
+                                'instructions' => $line->instructions,
+                                'line_total' => $line->line_total,
+                                'updateUrl' => route('cart.update'),
+                            ]) }})"
+                            x-show="!removed"
+                            x-transition.opacity
+                        >
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="flex gap-4">
                                     <img src="{{ $line->item->imageUrl() }}" alt="{{ $line->item->name }}" class="size-20 rounded-xl object-cover">
                                     <div>
                                         <h3 class="font-semibold text-gray-900">{{ $line->item->name }}</h3>
-                                        <p class="text-sm text-orange-600">{{ $line->item->formattedPrice() }} × {{ $line->quantity }}</p>
-                                        <p class="mt-1 text-sm font-medium text-gray-900">Line total: {{ \App\Support\Peso::format($line->line_total) }}</p>
+                                        <p class="text-sm text-orange-600">{{ $line->item->formattedPrice() }} × <span x-text="quantity"></span></p>
+                                        <p class="mt-1 text-sm font-medium text-gray-900">Line total: <span x-text="formattedLineTotal()"></span></p>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-3 sm:items-end">
-                                    <div class="flex items-center gap-2">
+                                    <div class="relative flex items-center gap-2">
                                         <label class="sr-only" for="qty-{{ $line->item->id }}">Quantity</label>
-                                        <input id="qty-{{ $line->item->id }}" type="number" name="quantity" value="{{ $line->quantity }}" min="0" max="99" class="w-20 rounded-lg border border-gray-200 bg-slate-100 px-3 py-2 text-sm text-gray-900">
-                                        <button type="submit" class="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:border-orange-500/50">Update</button>
+                                        <input
+                                            id="qty-{{ $line->item->id }}"
+                                            type="number"
+                                            name="quantity"
+                                            x-model.number="quantity"
+                                            x-on:change="updateQuantity($event.target.value)"
+                                            x-bind:disabled="loading"
+                                            min="0"
+                                            max="99"
+                                            class="w-20 rounded-lg border border-gray-200 bg-slate-100 px-3 py-2 text-sm text-gray-900 disabled:opacity-60"
+                                        >
+                                        <i
+                                            x-show="loading"
+                                            x-cloak
+                                            class="fa-solid fa-spinner fa-spin text-sm text-orange-500"
+                                            aria-hidden="true"
+                                            title="Updating…"
+                                        ></i>
                                     </div>
-                                    <input type="text" name="instructions" value="{{ $line->instructions }}" placeholder="Special instructions..." class="w-full rounded-lg border border-gray-200 bg-slate-100 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 sm:w-64">
+                                    <input
+                                        type="text"
+                                        x-model="instructions"
+                                        x-on:change="updateInstructions($event.target.value)"
+                                        x-bind:disabled="loading"
+                                        placeholder="Special instructions..."
+                                        class="w-full rounded-lg border border-gray-200 bg-slate-100 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 disabled:opacity-60 sm:w-64"
+                                    >
                                 </div>
-                            </form>
+                            </div>
                             <form action="{{ route('cart.remove') }}" method="post" class="mt-3">
                                 @csrf
                                 <input type="hidden" name="menu_item_id" value="{{ $line->item->id }}">
@@ -58,15 +92,15 @@
                     <dl class="mt-4 space-y-2 text-sm">
                         <div class="flex justify-between text-gray-500">
                             <dt>Subtotal</dt>
-                            <dd class="text-gray-900">{{ \App\Support\Peso::format($subtotal) }}</dd>
+                            <dd class="text-gray-900" x-data x-text="$store.cart.formattedSubtotal()">{{ \App\Support\Peso::format($subtotal) }}</dd>
                         </div>
                         <div class="flex justify-between text-gray-500">
                             <dt>Delivery Fee</dt>
-                            <dd class="text-gray-900">{{ \App\Support\Peso::format($deliveryFee) }}</dd>
+                            <dd class="text-gray-900" x-data x-text="$store.cart.formattedDeliveryFee()">{{ \App\Support\Peso::format($deliveryFee) }}</dd>
                         </div>
                         <div class="flex justify-between border-t border-gray-200 pt-3 text-base font-bold">
                             <dt class="text-gray-900">Total</dt>
-                            <dd class="text-orange-600">{{ \App\Support\Peso::format($total) }}</dd>
+                            <dd class="text-orange-600" x-data x-text="$store.cart.formattedTotal()">{{ \App\Support\Peso::format($total) }}</dd>
                         </div>
                     </dl>
                     <div class="mt-6 flex flex-col gap-3 sm:flex-row">

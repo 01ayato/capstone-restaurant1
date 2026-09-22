@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Storage;
 
 class MenuItem extends Model
 {
+    public const MAX_SIGNATURE_ITEMS = 4;
+
     protected $fillable = [
         'category_id',
         'name',
@@ -16,6 +18,7 @@ class MenuItem extends Model
         'price',
         'image',
         'is_available',
+        'is_signature',
         'stock_level',
         'reorder_level',
         'sort_order',
@@ -26,6 +29,7 @@ class MenuItem extends Model
         return [
             'price' => 'decimal:2',
             'is_available' => 'boolean',
+            'is_signature' => 'boolean',
             'stock_level' => 'integer',
             'reorder_level' => 'integer',
         ];
