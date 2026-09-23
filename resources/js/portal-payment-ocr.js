@@ -26,7 +26,7 @@ export function registerPortalPaymentOcr(Alpine) {
                 return;
             }
 
-            if (this.paymentMethod !== 'gcash' && this.paymentMethod !== 'maya') {
+            if (this.paymentMethod !== 'gcash') {
                 return;
             }
 

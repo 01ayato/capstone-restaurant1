@@ -37,7 +37,6 @@ class Order extends Model
     public const PAYMENT_METHODS = [
         'cash' => 'Cash',
         'gcash' => 'GCash',
-        'maya' => 'Maya',
     ];
 
     protected $fillable = [
@@ -110,7 +109,7 @@ class Order extends Model
 
     public function requiresPaymentProof(): bool
     {
-        return in_array($this->payment_method, ['gcash', 'maya'], true);
+        return $this->payment_method === 'gcash';
     }
 
     public function paymentProofUrl(): ?string

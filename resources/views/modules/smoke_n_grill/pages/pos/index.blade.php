@@ -128,14 +128,42 @@
                 </div>
             </div>
 
-            <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4 lg:px-4 lg:py-3">
-                <div class="flex items-center justify-between text-sm text-gray-600 lg:text-xs">
-                    <span>Subtotal</span>
-                    <span class="tabular-nums font-medium" x-text="formatMoney(subtotal)"></span>
+            <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4 lg:px-4 lg:py-3 dark:border-white/10 dark:bg-[#112a3d]">
+                {{-- Preset Discount Buttons --}}
+                <div class="mb-3 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs font-semibold text-gray-700 dark:text-gray-300">
+                        <span>Discount</span>
+                        <span x-show="selectedDiscountRate > 0" class="text-xs font-bold text-emerald-600 dark:text-emerald-400" x-text="`${selectedDiscountLabel} (-${formatMoney(discountAmount)})`"></span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <template x-for="preset in discountPresets" :key="'cart-discount-' + preset.label">
+                            <button
+                                type="button"
+                                class="rounded-lg border px-2 py-1.5 text-xs font-semibold transition text-center"
+                                x-bind:class="selectedDiscountRate === preset.rate
+                                    ? 'border-[#0D2232] bg-[#0D2232] text-white shadow-sm dark:border-orange-500 dark:bg-orange-600'
+                                    : 'border-gray-200 bg-white text-gray-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10'"
+                                x-on:click="setDiscount(preset.rate, preset.label)"
+                                x-text="preset.label"
+                            ></button>
+                        </template>
+                    </div>
                 </div>
-                <div class="mt-2 flex items-center justify-between text-lg font-bold text-gray-900 lg:mt-1.5 lg:text-base">
-                    <span>Total</span>
-                    <span class="tabular-nums" x-text="formatMoney(total)"></span>
+
+                {{-- Totals Breakdown --}}
+                <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400 lg:text-xs">
+                    <div class="flex items-center justify-between">
+                        <span>Subtotal</span>
+                        <span class="tabular-nums font-medium text-gray-900 dark:text-white" x-text="formatMoney(subtotal)"></span>
+                    </div>
+                    <div x-show="selectedDiscountRate > 0" class="flex items-center justify-between font-medium text-emerald-600 dark:text-emerald-400">
+                        <span x-text="`Discount (${selectedDiscountLabel})`"></span>
+                        <span class="tabular-nums" x-text="`-${formatMoney(discountAmount)}`"></span>
+                    </div>
+                    <div class="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-white/10 text-base font-bold text-gray-900 dark:text-white lg:text-sm">
+                        <span>Total</span>
+                        <span class="tabular-nums font-extrabold text-[#0D2232] dark:text-orange-400" x-text="formatMoney(total)"></span>
+                    </div>
                 </div>
 
                 <div class="mt-4 grid grid-cols-2 gap-2 lg:mt-3">
@@ -180,7 +208,7 @@
             ></div>
 
             <aside
-                class="absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl lg:max-w-sm"
+                class="absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl lg:max-w-sm dark:border-white/10 dark:bg-[#112a3d]"
                 x-show="checkoutOpen"
                 x-transition:enter="transform transition ease-out duration-300"
                 x-transition:enter-start="translate-x-full"
@@ -190,14 +218,14 @@
                 x-transition:leave-end="translate-x-full"
             >
                 {{-- Sidebar header --}}
-                <div class="flex shrink-0 items-center justify-between border-b border-gray-200 bg-slate-50 px-5 py-4">
+                <div class="flex shrink-0 items-center justify-between border-b border-gray-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-[#0d2232]">
                     <div>
-                        <h2 class="text-base font-bold text-gray-900" x-text="checkoutStep === 'overview' ? 'Order Overview' : 'Confirm Order'"></h2>
-                        <p class="mt-0.5 text-xs text-gray-500" x-text="checkoutStep === 'overview' ? 'Review items and order details' : 'Verify everything before completing'"></p>
+                        <h2 class="text-base font-bold text-gray-900 dark:text-white" x-text="checkoutStep === 'overview' ? 'Order Overview' : 'Confirm Order'"></h2>
+                        <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400" x-text="checkoutStep === 'overview' ? 'Review items and order details' : 'Verify everything before completing'"></p>
                     </div>
                     <button
                         type="button"
-                        class="flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-slate-100 hover:text-gray-700"
+                        class="flex size-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-slate-100 hover:text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
                         x-on:click="closeCheckout()"
                         aria-label="Close"
                     >
@@ -206,19 +234,19 @@
                 </div>
 
                 {{-- Step indicator --}}
-                <div class="flex shrink-0 gap-2 border-b border-gray-100 px-5 py-3">
+                <div class="flex shrink-0 gap-2 border-b border-gray-100 px-5 py-3 dark:border-white/10">
                     <span
                         class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
-                        x-bind:class="checkoutStep === 'overview' ? 'bg-[#0D2232] text-white' : 'bg-emerald-100 text-emerald-800'"
+                        x-bind:class="checkoutStep === 'overview' ? 'bg-[#0D2232] text-white dark:bg-orange-600' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'"
                     >
                         <span class="flex size-4 items-center justify-center rounded-full text-[10px]" x-bind:class="checkoutStep === 'confirm' ? 'bg-emerald-600 text-white' : 'bg-white/20'">1</span>
                         Overview
                     </span>
                     <span
                         class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
-                        x-bind:class="checkoutStep === 'confirm' ? 'bg-[#0D2232] text-white' : 'bg-slate-100 text-gray-500'"
+                        x-bind:class="checkoutStep === 'confirm' ? 'bg-[#0D2232] text-white dark:bg-orange-600' : 'bg-slate-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'"
                     >
-                        <span class="flex size-4 items-center justify-center rounded-full text-[10px]" x-bind:class="checkoutStep === 'confirm' ? 'bg-white/20' : 'bg-gray-300 text-gray-600'">2</span>
+                        <span class="flex size-4 items-center justify-center rounded-full text-[10px]" x-bind:class="checkoutStep === 'confirm' ? 'bg-white/20' : 'bg-gray-300 text-gray-600 dark:bg-white/10 dark:text-gray-300'">2</span>
                         Confirmation
                     </span>
                 </div>
@@ -227,92 +255,201 @@
                 <div x-show="checkoutStep === 'overview'" class="flex min-h-0 flex-1 flex-col">
                     <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4">
                         <section>
-                            <h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-500">Order items</h3>
+                            <h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Order items</h3>
                             <ul class="mt-3 space-y-2">
                                 <template x-for="line in cart" :key="'overview-' + line.menu_item_id">
-                                    <li class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-slate-50 px-3 py-2.5 text-sm">
+                                    <li class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-slate-50 px-3 py-2.5 text-sm dark:border-white/10 dark:bg-white/5">
                                         <div class="min-w-0">
-                                            <p class="font-semibold text-gray-900" x-text="line.name"></p>
-                                            <p class="text-xs text-gray-500">
+                                            <p class="font-semibold text-gray-900 dark:text-white" x-text="line.name"></p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">
                                                 <span x-text="line.quantity"></span> × <span x-text="line.price_label"></span>
                                             </p>
                                         </div>
-                                        <span class="shrink-0 font-bold tabular-nums text-gray-900" x-text="formatMoney(line.price * line.quantity)"></span>
+                                        <span class="shrink-0 font-bold tabular-nums text-gray-900 dark:text-white" x-text="formatMoney(line.price * line.quantity)"></span>
                                     </li>
                                 </template>
                             </ul>
                         </section>
 
                         <section>
-                            <h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-500">Customer</h3>
+                            <h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Customer</h3>
                             <div class="mt-3 grid gap-3">
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Name</label>
-                                    <input type="text" x-model="customerName" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm">
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Name</label>
+                                    <input type="text" x-model="customerName" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white">
                                 </div>
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Contact number</label>
-                                    <input type="text" x-model="contactNumber" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm">
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Contact number</label>
+                                    <input type="text" x-model="contactNumber" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white">
                                 </div>
                             </div>
                         </section>
 
                         <section>
-                            <h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-500">Order details</h3>
+                            <h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Order details</h3>
                             <div class="mt-3 grid gap-3">
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Order type</label>
-                                    <select x-model="orderType" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm">
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Order type</label>
+                                    <select x-model="orderType" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white">
                                         <option value="dine_in">Dine-in</option>
                                         <option value="takeaway">Takeaway</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Payment method</label>
-                                    <select x-model="paymentMethod" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm">
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Payment method</label>
+                                    <select x-model="paymentMethod" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white">
                                         @foreach ($paymentMethods as $value => $label)
                                             <option value="{{ $value }}">{{ $label }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Notes <span class="font-normal text-gray-400">(optional)</span></label>
-                                    <textarea x-model="notes" rows="2" placeholder="Special instructions" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm"></textarea>
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Notes <span class="font-normal text-gray-400 dark:text-gray-500">(optional)</span></label>
+                                    <textarea x-model="notes" rows="2" placeholder="Special instructions" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white dark:placeholder:text-gray-500"></textarea>
                                 </div>
+                            </div>
+                        </section>
+
+                        {{-- Preset Discount Buttons in Drawer --}}
+                        <section>
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Discount</h3>
+                                <span x-show="selectedDiscountRate > 0" class="text-xs font-bold text-emerald-600 dark:text-emerald-400" x-text="`${selectedDiscountLabel} (-${formatMoney(discountAmount)})`"></span>
+                            </div>
+                            <div class="mt-2.5 grid grid-cols-3 gap-2">
+                                <template x-for="preset in discountPresets" :key="'drawer-discount-' + preset.label">
+                                    <button
+                                        type="button"
+                                        class="rounded-lg border px-2.5 py-2 text-xs font-semibold transition text-center"
+                                        x-bind:class="selectedDiscountRate === preset.rate
+                                            ? 'border-[#0D2232] bg-[#0D2232] text-white shadow-sm dark:border-orange-500 dark:bg-orange-600'
+                                            : 'border-gray-200 bg-white text-gray-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10'"
+                                        x-on:click="setDiscount(preset.rate, preset.label)"
+                                        x-text="preset.label"
+                                    ></button>
+                                </template>
                             </div>
                         </section>
                     </div>
 
-                    <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4">
+                    {{-- Step 1 Footer: Cash Tendered, Change, and Totals --}}
+                    <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4 dark:border-white/10 dark:bg-[#112a3d]">
                         <template x-if="paymentMethod === 'cash'">
                             <div class="mb-4 space-y-3">
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Amount Tendered <span class="font-normal text-gray-400">(Cash Given)</span></label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        x-model="amountTendered"
-                                        placeholder="0.00"
-                                        class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm"
-                                    >
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                                            Cash Tendered <span class="font-normal text-gray-400 dark:text-gray-500">(Cash Given)</span>
+                                        </label>
+                                        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Due: <strong class="text-gray-900 dark:text-white" x-text="formatMoney(total)"></strong></span>
+                                    </div>
+                                    <div class="relative rounded-lg shadow-sm">
+                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <span class="text-sm font-bold text-gray-400 dark:text-gray-500">₱</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            x-model="amountTendered"
+                                            placeholder="0.00"
+                                            class="w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 py-2.5 text-sm font-semibold tabular-nums text-gray-900 shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white dark:placeholder:text-gray-500"
+                                        >
+                                    </div>
+
+                                    {{-- Quick denomination buttons --}}
+                                    <div class="mt-2 flex flex-wrap gap-1.5">
+                                        <button
+                                            type="button"
+                                            class="rounded-md border border-gray-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-gray-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+                                            x-on:click="setExactTendered()"
+                                        >
+                                            Exact
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-md border border-gray-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-gray-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+                                            x-on:click="setTendered(100)"
+                                        >
+                                            ₱100
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-md border border-gray-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-gray-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+                                            x-on:click="setTendered(200)"
+                                        >
+                                            ₱200
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-md border border-gray-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-gray-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+                                            x-on:click="setTendered(500)"
+                                        >
+                                            ₱500
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-md border border-gray-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-gray-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+                                            x-on:click="setTendered(1000)"
+                                        >
+                                            ₱1,000
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="flex items-center justify-between text-sm">
-                                    <span class="font-medium text-gray-500">Change (Sukli)</span>
-                                    <span class="font-bold tabular-nums" x-bind:class="change < 0 ? 'text-red-600' : 'text-emerald-700'" x-text="formatMoney(Math.max(change, 0))"></span>
+
+                                {{-- Automatic Change Calculator Box --}}
+                                <div
+                                    class="rounded-xl border p-3 transition"
+                                    x-bind:class="{
+                                        'border-emerald-200 bg-emerald-50/80 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300': isTenderedSufficient && numericAmountTendered > 0,
+                                        'border-rose-200 bg-rose-50/80 text-rose-900 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300': !isTenderedSufficient && numericAmountTendered > 0,
+                                        'border-gray-200 bg-slate-50 text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-300': numericAmountTendered === 0
+                                    }"
+                                >
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-bold">Change (Sukli)</span>
+                                            <span x-show="isTenderedSufficient && numericAmountTendered > 0" class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+                                                Ready
+                                            </span>
+                                        </div>
+                                        <span
+                                            class="text-lg font-extrabold tabular-nums"
+                                            x-bind:class="isTenderedSufficient ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+                                            x-text="formatMoney(Math.max(change, 0))"
+                                        ></span>
+                                    </div>
+                                    <div x-show="!isTenderedSufficient && numericAmountTendered > 0" class="mt-1 flex items-center justify-between text-xs font-semibold text-rose-600 dark:text-rose-400">
+                                        <span>Insufficient amount</span>
+                                        <span>Short by <strong x-text="formatMoney(shortage)"></strong></span>
+                                    </div>
                                 </div>
                             </div>
                         </template>
-                        <div class="flex items-center justify-between text-lg font-bold text-gray-900">
-                            <span>Total</span>
-                            <span class="tabular-nums" x-text="formatMoney(total)"></span>
+
+                        {{-- Order summary totals --}}
+                        <div class="space-y-1.5 border-t border-gray-100 pt-3 dark:border-white/10 text-xs">
+                            <div class="flex items-center justify-between text-gray-500 dark:text-gray-400">
+                                <span>Subtotal</span>
+                                <span class="font-medium tabular-nums text-gray-900 dark:text-white" x-text="formatMoney(subtotal)"></span>
+                            </div>
+                            <div x-show="selectedDiscountRate > 0" class="flex items-center justify-between font-medium text-emerald-600 dark:text-emerald-400">
+                                <span x-text="`Discount (${selectedDiscountLabel})`"></span>
+                                <span class="tabular-nums" x-text="`-${formatMoney(discountAmount)}`"></span>
+                            </div>
+                            <div class="flex items-center justify-between pt-1 text-base font-bold text-gray-900 dark:text-white">
+                                <span>Total to Pay</span>
+                                <span class="text-lg font-black tabular-nums text-[#0D2232] dark:text-orange-400" x-text="formatMoney(total)"></span>
+                            </div>
                         </div>
+
                         <button
                             type="button"
-                            class="mt-4 w-full rounded-lg bg-[#0D2232] px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#16364D]"
+                            class="mt-4 w-full rounded-lg bg-[#0D2232] px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#16364D] dark:bg-orange-600 dark:hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             x-on:click="goToConfirm()"
+                            x-bind:disabled="paymentMethod === 'cash' && !isTenderedSufficient"
                         >
-                            Complete
+                            Continue to Confirmation
                         </button>
                     </div>
                 </div>
@@ -320,79 +457,88 @@
                 {{-- Step 2: Confirmation --}}
                 <div x-show="checkoutStep === 'confirm'" class="flex min-h-0 flex-1 flex-col">
                     <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-                        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
                             <p class="font-semibold">Ready to complete this order?</p>
-                            <p class="mt-1 text-xs text-amber-800">Please verify the summary below before proceeding.</p>
+                            <p class="mt-1 text-xs text-amber-800 dark:text-amber-400">Please verify the summary below before proceeding.</p>
                         </div>
 
                         <dl class="mt-5 space-y-3 text-sm">
-                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3">
-                                <dt class="text-gray-500">Customer</dt>
-                                <dd class="text-right font-medium text-gray-900" x-text="customerName"></dd>
+                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3 dark:border-white/10">
+                                <dt class="text-gray-500 dark:text-gray-400">Customer</dt>
+                                <dd class="text-right font-medium text-gray-900 dark:text-white" x-text="customerName"></dd>
                             </div>
-                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3">
-                                <dt class="text-gray-500">Contact</dt>
-                                <dd class="text-right text-gray-900" x-text="contactNumber"></dd>
+                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3 dark:border-white/10">
+                                <dt class="text-gray-500 dark:text-gray-400">Contact</dt>
+                                <dd class="text-right text-gray-900 dark:text-white" x-text="contactNumber"></dd>
                             </div>
-                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3">
-                                <dt class="text-gray-500">Order type</dt>
-                                <dd class="text-right text-gray-900" x-text="orderTypeLabel()"></dd>
+                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3 dark:border-white/10">
+                                <dt class="text-gray-500 dark:text-gray-400">Order type</dt>
+                                <dd class="text-right text-gray-900 dark:text-white" x-text="orderTypeLabel()"></dd>
                             </div>
-                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3">
-                                <dt class="text-gray-500">Payment</dt>
-                                <dd class="text-right text-gray-900" x-text="paymentMethodLabel()"></dd>
+                            <div class="flex justify-between gap-4 border-b border-gray-100 pb-3 dark:border-white/10">
+                                <dt class="text-gray-500 dark:text-gray-400">Payment</dt>
+                                <dd class="text-right font-medium text-gray-900 dark:text-white" x-text="paymentMethodLabel()"></dd>
                             </div>
+                            <div x-show="selectedDiscountRate > 0" class="flex justify-between gap-4 border-b border-gray-100 pb-3 dark:border-white/10">
+                                <dt class="text-gray-500 dark:text-gray-400">Discount</dt>
+                                <dd class="text-right font-bold text-emerald-600 dark:text-emerald-400" x-text="`${selectedDiscountLabel} (-${formatMoney(discountAmount)})`"></dd>
+                            </div>
+                            <template x-if="paymentMethod === 'cash'">
+                                <div class="space-y-2 border-b border-gray-100 pb-3 dark:border-white/10">
+                                    <div class="flex justify-between gap-4">
+                                        <dt class="text-gray-500 dark:text-gray-400">Cash Tendered</dt>
+                                        <dd class="text-right font-medium tabular-nums text-gray-900 dark:text-white" x-text="formatMoney(numericAmountTendered)"></dd>
+                                    </div>
+                                    <div class="flex justify-between gap-4">
+                                        <dt class="font-semibold text-emerald-700 dark:text-emerald-400">Change (Sukli)</dt>
+                                        <dd class="text-right font-extrabold tabular-nums text-emerald-700 dark:text-emerald-400" x-text="formatMoney(Math.max(change, 0))"></dd>
+                                    </div>
+                                </div>
+                            </template>
                             <template x-if="notes.trim()">
-                                <div class="flex justify-between gap-4 border-b border-gray-100 pb-3">
-                                    <dt class="shrink-0 text-gray-500">Notes</dt>
-                                    <dd class="text-right text-gray-900" x-text="notes"></dd>
+                                <div class="flex justify-between gap-4 border-b border-gray-100 pb-3 dark:border-white/10">
+                                    <dt class="shrink-0 text-gray-500 dark:text-gray-400">Notes</dt>
+                                    <dd class="text-right text-gray-900 dark:text-white" x-text="notes"></dd>
                                 </div>
                             </template>
                         </dl>
 
-                        <h3 class="mt-6 text-[11px] font-bold uppercase tracking-wider text-gray-500">Items summary</h3>
+                        <h3 class="mt-6 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Items summary</h3>
                         <ul class="mt-3 space-y-2">
                             <template x-for="line in cart" :key="'confirm-' + line.menu_item_id">
                                 <li class="flex items-center justify-between gap-3 text-sm">
-                                    <span class="text-gray-700">
-                                        <span class="font-semibold text-gray-900" x-text="line.name"></span>
-                                        <span class="text-gray-500"> × </span>
+                                    <span class="text-gray-700 dark:text-gray-300">
+                                        <span class="font-semibold text-gray-900 dark:text-white" x-text="line.name"></span>
+                                        <span class="text-gray-500 dark:text-gray-400"> × </span>
                                         <span x-text="line.quantity"></span>
                                     </span>
-                                    <span class="font-medium tabular-nums text-gray-900" x-text="formatMoney(line.price * line.quantity)"></span>
+                                    <span class="font-medium tabular-nums text-gray-900 dark:text-white" x-text="formatMoney(line.price * line.quantity)"></span>
                                 </li>
                             </template>
                         </ul>
                     </div>
 
-                    <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4">
-                        <template x-if="paymentMethod === 'cash'">
-                            <div class="mb-4 space-y-3">
-                                <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-gray-700">Amount Tendered <span class="font-normal text-gray-400">(Cash Given)</span></label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        x-model="amountTendered"
-                                        placeholder="0.00"
-                                        class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm"
-                                    >
-                                </div>
-                                <div class="flex items-center justify-between text-sm">
-                                    <span class="font-medium text-gray-500">Change (Sukli)</span>
-                                    <span class="font-bold tabular-nums" x-bind:class="change < 0 ? 'text-red-600' : 'text-emerald-700'" x-text="formatMoney(Math.max(change, 0))"></span>
-                                </div>
+                    {{-- Step 2 Footer --}}
+                    <div class="shrink-0 border-t border-gray-200 bg-white px-5 py-4 dark:border-white/10 dark:bg-[#112a3d]">
+                        <div class="space-y-1.5 mb-4 text-xs">
+                            <div class="flex items-center justify-between text-gray-500 dark:text-gray-400">
+                                <span>Subtotal</span>
+                                <span class="font-medium tabular-nums text-gray-900 dark:text-white" x-text="formatMoney(subtotal)"></span>
                             </div>
-                        </template>
-                        <div class="flex items-center justify-between text-lg font-bold text-gray-900">
-                            <span>Total</span>
-                            <span class="tabular-nums" x-text="formatMoney(total)"></span>
+                            <div x-show="selectedDiscountRate > 0" class="flex items-center justify-between font-medium text-emerald-600 dark:text-emerald-400">
+                                <span x-text="`Discount (${selectedDiscountLabel})`"></span>
+                                <span class="tabular-nums" x-text="`-${formatMoney(discountAmount)}`"></span>
+                            </div>
+                            <div class="flex items-center justify-between pt-1 text-base font-bold text-gray-900 dark:text-white">
+                                <span>Final Total</span>
+                                <span class="text-lg font-black tabular-nums text-[#0D2232] dark:text-orange-400" x-text="formatMoney(total)"></span>
+                            </div>
                         </div>
-                        <div class="mt-4 grid grid-cols-2 gap-2">
+
+                        <div class="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
-                                class="rounded-lg border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                                class="rounded-lg border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
                                 x-on:click="backToOverview()"
                                 x-bind:disabled="submitting"
                             >
@@ -400,9 +546,9 @@
                             </button>
                             <button
                                 type="button"
-                                class="rounded-lg bg-emerald-600 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                class="rounded-lg bg-emerald-600 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
                                 x-on:click="completeSale()"
-                                x-bind:disabled="submitting || (paymentMethod === 'cash' && amountTendered < total)"
+                                x-bind:disabled="submitting || (paymentMethod === 'cash' && !isTenderedSufficient)"
                             >
                                 <span x-show="!submitting">Proceed to Complete</span>
                                 <span x-show="submitting" x-cloak>Processing...</span>

@@ -127,7 +127,7 @@ class ReservationController extends Controller
     {
         $request->validate([
             'payment_proof' => ['required', 'image', 'max:4096'],
-            'payment_method' => ['required', 'in:gcash,maya'],
+            'payment_method' => ['required', 'in:gcash'],
         ]);
 
         try {
@@ -163,9 +163,9 @@ class ReservationController extends Controller
             'items' => ['nullable', 'array'],
             'items.*.menu_item_id' => ['required_with:items', 'integer', 'exists:menu_items,id'],
             'items.*.quantity' => ['required_with:items', 'integer', 'min:1', 'max:99'],
-            'deposit_payment_method' => ['required', 'in:cash,gcash,maya'],
+            'deposit_payment_method' => ['required', 'in:cash,gcash'],
             'deposit_payment_proof' => [
-                Rule::requiredIf(in_array($request->input('deposit_payment_method'), ['gcash', 'maya'], true)),
+                Rule::requiredIf(in_array($request->input('deposit_payment_method'), ['gcash'], true)),
                 'nullable',
                 'image',
                 'max:4096',

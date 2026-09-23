@@ -65,7 +65,7 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'payment_proof' => ['required', 'image', 'max:4096'],
-            'payment_method' => ['required', 'in:gcash,maya'],
+            'payment_method' => ['required', 'in:gcash'],
         ]);
 
         try {
@@ -102,9 +102,9 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'customer_name' => ['required', 'string', 'max:150'],
             'contact_number' => ['required', 'string', 'max:30'],
-            'payment_method' => ['required', 'in:cash,gcash,maya'],
+            'payment_method' => ['required', 'in:cash,gcash'],
             'payment_proof' => [
-                Rule::requiredIf(in_array($request->input('payment_method'), ['gcash', 'maya'], true)),
+                Rule::requiredIf(in_array($request->input('payment_method'), ['gcash'], true)),
                 'nullable',
                 'image',
                 'max:4096',

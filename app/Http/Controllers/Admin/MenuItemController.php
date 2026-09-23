@@ -30,6 +30,12 @@ class MenuItemController extends Controller
                 'is_active' => $category->is_active,
                 'menu_items_count' => $category->menu_items_count,
             ])->values()->all(),
+            'items' => $menuItems->map(fn (MenuItem $item) => [
+                'id' => $item->id,
+                'category_id' => (string) $item->category_id,
+                'name' => $item->name,
+                'description' => $item->description ?? '',
+            ])->values()->all(),
             'signatureCount' => $signatureCount,
             'maxSignatureItems' => MenuItem::MAX_SIGNATURE_ITEMS,
             'routes' => [

@@ -23,11 +23,39 @@ export function registerMenuItemsPage(Alpine) {
         editItem: null,
         addItemOpen: false,
         selectedCategoryId: '',
+        searchQuery: '',
         addCategoryId: String(initial?.categories?.[0]?.id ?? ''),
         categories: initial?.categories ?? [],
+        items: initial?.items ?? [],
         routes: initial?.routes ?? {},
         signatureCount: Number(initial?.signatureCount ?? 0),
         maxSignatureItems: Number(initial?.maxSignatureItems ?? 4),
+
+        matchesItem(categoryId, itemName, description = '') {
+            const matchesCategory = this.selectedCategoryId === '' || String(this.selectedCategoryId) === String(categoryId);
+            const query = (this.searchQuery || '').trim().toLowerCase();
+            if (!matchesCategory) {
+                return false;
+            }
+            if (query === '') {
+                return true;
+            }
+            const nameMatch = itemName ? String(itemName).toLowerCase().includes(query) : false;
+            const descMatch = description ? String(description).toLowerCase().includes(query) : false;
+            return Boolean(nameMatch || descMatch);
+        },
+
+        get visibleItemsCount() {
+            if (!this.items || this.items.length === 0) {
+                return 1;
+            }
+            return this.items.filter((item) => this.matchesItem(item.category_id, item.name, item.description)).length;
+        },
+
+        clearFilters() {
+            this.selectedCategoryId = '';
+            this.searchQuery = '';
+        },
 
         isDrinksCategory(categoryId) {
             const category = this.categories.find((c) => String(c.id) === String(categoryId));

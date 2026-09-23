@@ -24,11 +24,31 @@ export function registerPosPage(Alpine) {
         paymentMethod: 'cash',
         notes: '',
         amountTendered: '',
+        discountPresets: [
+            { label: 'None', rate: 0 },
+            { label: '10%', rate: 0.10 },
+            { label: 'Senior/PWD 20%', rate: 0.20 },
+        ],
+        selectedDiscountRate: 0,
+        selectedDiscountLabel: 'None',
         storeUrl: initial?.storeUrl ?? '',
         ordersUrl: initial?.ordersUrl ?? '',
         submitting: false,
         checkoutOpen: false,
         checkoutStep: 'overview',
+
+        setDiscount(rate, label) {
+            this.selectedDiscountRate = rate;
+            this.selectedDiscountLabel = label;
+        },
+
+        setTendered(val) {
+            this.amountTendered = Number(val).toFixed(2);
+        },
+
+        setExactTendered() {
+            this.amountTendered = Number(this.total).toFixed(2);
+        },
 
         get activeCategory() {
             return this.categories.find((category) => category.id === this.activeCategoryId) ?? null;
@@ -38,16 +58,48 @@ export function registerPosPage(Alpine) {
             return this.cart.reduce((sum, line) => sum + line.price * line.quantity, 0);
         },
 
+        get discountAmount() {
+            if (!this.selectedDiscountRate || this.selectedDiscountRate <= 0) {
+                return 0;
+            }
+            return Math.round(this.subtotal * this.selectedDiscountRate * 100) / 100;
+        },
+
         get total() {
-            return this.subtotal;
+            return Math.max(0, this.subtotal - this.discountAmount);
         },
 
         get cartCount() {
             return this.cart.reduce((sum, line) => sum + line.quantity, 0);
         },
 
+        get numericAmountTendered() {
+            return parseFloat(this.amountTendered) || 0;
+        },
+
+        get isCashPayment() {
+            return this.paymentMethod === 'cash';
+        },
+
+        get isTenderedSufficient() {
+            if (!this.isCashPayment) {
+                return true;
+            }
+            return this.numericAmountTendered >= this.total;
+        },
+
         get change() {
-            return (parseFloat(this.amountTendered) || 0) - this.total;
+            if (!this.amountTendered || this.numericAmountTendered === 0) {
+                return 0;
+            }
+            return Math.round((this.numericAmountTendered - this.total) * 100) / 100;
+        },
+
+        get shortage() {
+            if (!this.amountTendered || this.isTenderedSufficient) {
+                return 0;
+            }
+            return Math.round((this.total - this.numericAmountTendered) * 100) / 100;
         },
 
         formatMoney(amount) {
@@ -92,6 +144,9 @@ export function registerPosPage(Alpine) {
 
         clearCart() {
             this.cart = [];
+            this.selectedDiscountRate = 0;
+            this.selectedDiscountLabel = 'None';
+            this.amountTendered = '';
             this.closeCheckout();
         },
 
@@ -116,6 +171,11 @@ export function registerPosPage(Alpine) {
                 return;
             }
 
+            if (this.isCashPayment && !this.isTenderedSufficient) {
+                window.toast?.warning?.('Amount tendered is less than the total amount.');
+                return;
+            }
+
             this.checkoutStep = 'confirm';
         },
 
@@ -128,7 +188,7 @@ export function registerPosPage(Alpine) {
         },
 
         paymentMethodLabel() {
-            const labels = { cash: 'Cash', gcash: 'GCash', maya: 'Maya' };
+            const labels = { cash: 'Cash', gcash: 'GCash' };
             return labels[this.paymentMethod] ?? this.paymentMethod;
         },
 
@@ -142,12 +202,18 @@ export function registerPosPage(Alpine) {
                 return;
             }
 
-            if (this.paymentMethod === 'cash' && (parseFloat(this.amountTendered) || 0) < this.total) {
+            if (this.isCashPayment && !this.isTenderedSufficient) {
                 window.toast?.warning?.('Amount tendered is less than the total amount.');
                 return;
             }
 
             this.submitting = true;
+
+            const instructionsSummary = [
+                this.notes.trim(),
+                this.selectedDiscountRate > 0 ? `[Discount: ${this.selectedDiscountLabel} -${this.formatMoney(this.discountAmount)}]` : '',
+                this.isCashPayment && this.numericAmountTendered > 0 ? `[Cash: ${this.formatMoney(this.numericAmountTendered)} | Sukli: ${this.formatMoney(Math.max(this.change, 0))}]` : '',
+            ].filter(Boolean).join(' ');
 
             try {
                 const response = await fetch(this.storeUrl, {
@@ -162,7 +228,12 @@ export function registerPosPage(Alpine) {
                         contact_number: this.contactNumber,
                         order_type: this.orderType,
                         payment_method: this.paymentMethod,
-                        special_instructions: this.notes,
+                        special_instructions: instructionsSummary || null,
+                        discount_rate: this.selectedDiscountRate,
+                        discount_label: this.selectedDiscountLabel,
+                        discount_amount: this.discountAmount,
+                        amount_tendered: this.isCashPayment ? this.numericAmountTendered : null,
+                        change: this.isCashPayment ? Math.max(this.change, 0) : 0,
                         items: this.cart.map((line) => ({
                             menu_item_id: line.menu_item_id,
                             quantity: line.quantity,
@@ -185,6 +256,8 @@ export function registerPosPage(Alpine) {
                 this.clearCart();
                 this.notes = '';
                 this.amountTendered = '';
+                this.selectedDiscountRate = 0;
+                this.selectedDiscountLabel = 'None';
                 this.closeCheckout();
             } catch {
                 window.toast?.error?.('Could not complete the sale. Please try again.');

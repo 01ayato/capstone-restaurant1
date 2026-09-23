@@ -402,18 +402,18 @@
                                         Pay <span x-text="formatMoney(depositBreakdown().total)"></span> at the restaurant before your reserved time. Staff will deduct it from your bill.
                                     </div>
 
-                                    <div x-show="paymentMethod === 'gcash' || paymentMethod === 'maya'" x-cloak class="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
+                                    <div x-show="paymentMethod === 'gcash'" x-cloak class="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
                                         <label for="deposit_payment_proof" class="mb-2 block text-xs font-bold uppercase tracking-widest text-orange-700">
                                             Payment screenshot
                                         </label>
-                                        <p class="mb-3 text-xs text-gray-500">Upload your <span x-text="paymentMethod === 'gcash' ? 'GCash' : 'Maya'"></span> transfer screenshot for <span x-text="formatMoney(depositBreakdown().total)"></span>.</p>
+                                        <p class="mb-3 text-xs text-gray-500">Upload your GCash transfer screenshot for <span x-text="formatMoney(depositBreakdown().total)"></span>.</p>
                                         <input
                                             id="deposit_payment_proof"
                                             name="deposit_payment_proof"
                                             type="file"
                                             accept="image/*"
                                             class="block w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
-                                            x-bind:required="paymentMethod === 'gcash' || paymentMethod === 'maya'"
+                                            x-bind:required="paymentMethod === 'gcash'"
                                             @change="onDepositProofSelected($event)"
                                         >
                                         <div x-show="scanning" class="mt-3 flex items-center gap-2 text-xs text-orange-700">

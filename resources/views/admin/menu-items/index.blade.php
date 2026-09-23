@@ -165,12 +165,61 @@
                 id="menu-category-filter"
                 x-model="selectedCategoryId"
                 class="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-zinc-400 focus:outline-none"
+            {{-- Live Search Input Field --}}
+            <div class="relative w-64 sm:w-80">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400 dark:text-gray-500">
+                    <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
+                </div>
+                <input
+                    type="text"
+                    x-model="searchQuery"
+                    placeholder="Search food item..."
+                    class="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-9 pr-8 text-sm text-gray-900 shadow-sm transition placeholder:text-zinc-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-orange-400 dark:focus:ring-orange-400/20"
+                >
+                <button
+                    type="button"
+                    x-show="searchQuery.trim().length > 0"
+                    x-cloak
+                    x-on:click="searchQuery = ''"
+                    class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-zinc-400 transition hover:text-zinc-600 dark:text-gray-500 dark:hover:text-gray-300"
+                    title="Clear search"
+                >
+                    <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            {{-- Filter by Category --}}
+            <div class="flex items-center gap-2">
+                <label for="menu-category-filter" class="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-gray-400">Filter by Category</label>
+                <select
+                    id="menu-category-filter"
+                    x-model="selectedCategoryId"
+                    class="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 dark:border-white/10 dark:bg-[#0d2232] dark:text-white dark:focus:border-orange-400 dark:focus:ring-orange-400/20"
+                >
+                    <option value="">All Categories</option>
+                    @foreach ($categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Clear all filters button --}}
+            <button
+                type="button"
+                x-show="selectedCategoryId !== '' || searchQuery.trim().length > 0"
+                x-cloak
+                x-on:click="clearFilters()"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+                title="Reset all filters"
             >
                 <option value="">All Categories</option>
                 @foreach ($categories as $cat)
                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                 @endforeach
             </select>
+                <i class="fa-solid fa-rotate-left text-[11px]" aria-hidden="true"></i>
+                Reset
+            </button>
         </div>
 
         <div class="admin-table-shell overflow-x-auto lg:overflow-visible">
@@ -189,6 +238,10 @@
                 <tbody class="divide-y divide-gray-100">
                     @foreach ($menuItems as $item)
                         <tr x-show="selectedCategoryId === '' || selectedCategoryId === '{{ $item->category_id }}'">
+                        <tr
+                            x-show="matchesItem('{{ $item->category_id }}', @js($item->name), @js($item->description ?? ''))"
+                            class="transition-colors hover:bg-slate-50/80 dark:hover:bg-white/5"
+                        >
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <img src="{{ $item->imageUrl() }}" alt="" class="size-10 rounded-lg object-cover">
@@ -268,6 +321,15 @@
                             </td>
                         </tr>
                     @endforeach
+                    <tr x-show="items.length > 0 && visibleItemsCount === 0" x-cloak>
+                        <td colspan="7" class="px-4 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                            <div class="mx-auto mb-2 flex size-10 items-center justify-center rounded-full bg-slate-100 text-gray-400 dark:bg-white/5 dark:text-gray-500">
+                                <i class="fa-solid fa-magnifying-glass text-sm" aria-hidden="true"></i>
+                            </div>
+                            <p class="font-medium text-gray-700 dark:text-gray-200">No matching food items</p>
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">No items match your search or selected category.</p>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

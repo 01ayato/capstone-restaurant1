@@ -54,9 +54,9 @@
                         </div>
                         @error('payment_method')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
 
-                        <div x-show="paymentMethod === 'gcash' || paymentMethod === 'maya'" x-cloak class="mt-4 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
+                        <div x-show="paymentMethod === 'gcash'" x-cloak class="mt-4 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
                             <label for="payment_proof" class="mb-2 block text-xs font-bold uppercase tracking-widest text-orange-700">
-                                Payment proof <span x-text="paymentMethod === 'gcash' ? '(GCash screenshot)' : '(Maya screenshot)'"></span>
+                                Payment proof <span x-text="'(GCash screenshot)'"></span>
                             </label>
                             <p class="mb-3 text-xs text-gray-500">Upload a screenshot of your successful payment. We will read the reference number and amount automatically.</p>
                             <input
@@ -65,7 +65,7 @@
                                 type="file"
                                 accept="image/*"
                                 class="block w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-orange-400"
-                                x-bind:required="paymentMethod === 'gcash' || paymentMethod === 'maya'"
+                                x-bind:required="paymentMethod === 'gcash'"
                                 @change="onProofSelected($event)"
                             >
                             @error('payment_proof')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror

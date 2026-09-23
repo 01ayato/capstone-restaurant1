@@ -62,8 +62,11 @@ class PosController extends Controller
             'customer_name' => ['required', 'string', 'max:150'],
             'contact_number' => ['required', 'string', 'max:30'],
             'order_type' => ['required', 'in:dine_in,takeaway'],
-            'payment_method' => ['required', 'in:cash,gcash,maya'],
+            'payment_method' => ['required', 'in:cash,gcash'],
             'special_instructions' => ['nullable', 'string', 'max:500'],
+            'discount_rate' => ['nullable', 'numeric', 'min:0', 'max:1'],
+            'discount_label' => ['nullable', 'string', 'max:100'],
+            'amount_tendered' => ['nullable', 'numeric', 'min:0'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.menu_item_id' => ['required', 'integer', 'exists:menu_items,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
@@ -108,6 +111,11 @@ class PosController extends Controller
                 'quantity' => $line['quantity'],
             ], $lineItems));
 
+            $discountRate = (float) ($validated['discount_rate'] ?? 0);
+            $discountAmount = round($subtotal * $discountRate, 2);
+            $finalTotal = max(0.0, ($subtotal - $discountAmount) + $deliveryFee);
+            $amountTendered = isset($validated['amount_tendered']) ? (float) $validated['amount_tendered'] : null;
+
             $order = Order::query()->create([
                 'order_number' => Order::generateOrderNumber(),
                 'user_id' => Auth::id(),
@@ -115,9 +123,10 @@ class PosController extends Controller
                 'contact_number' => $validated['contact_number'],
                 'delivery_address' => $deliveryAddress,
                 'payment_method' => $validated['payment_method'],
+                'payment_amount_paid' => $amountTendered,
                 'subtotal' => $subtotal,
                 'delivery_fee' => $deliveryFee,
-                'total' => $subtotal + $deliveryFee,
+                'total' => $finalTotal,
                 'status' => Order::STATUS_PENDING,
                 'special_instructions' => $validated['special_instructions'] ?? null,
             ]);
