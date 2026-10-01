@@ -159,13 +159,8 @@
             </div>
         </template>
 
+        <!-- Search and Filter Section (Cleaned up: only 1 filter block remains) -->
         <div class="flex flex-wrap items-center gap-3">
-            <label for="menu-category-filter" class="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Filter by Category</label>
-            <select
-                id="menu-category-filter"
-                x-model="selectedCategoryId"
-                class="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-zinc-400 focus:outline-none"
-            {{-- Live Search Input Field --}}
             <div class="relative w-64 sm:w-80">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400 dark:text-gray-500">
                     <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
@@ -188,7 +183,6 @@
                 </button>
             </div>
 
-            {{-- Filter by Category --}}
             <div class="flex items-center gap-2">
                 <label for="menu-category-filter" class="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-gray-400">Filter by Category</label>
                 <select
@@ -203,7 +197,6 @@
                 </select>
             </div>
 
-            {{-- Clear all filters button --}}
             <button
                 type="button"
                 x-show="selectedCategoryId !== '' || searchQuery.trim().length > 0"
@@ -212,11 +205,6 @@
                 class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
                 title="Reset all filters"
             >
-                <option value="">All Categories</option>
-                @foreach ($categories as $cat)
-                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                @endforeach
-            </select>
                 <i class="fa-solid fa-rotate-left text-[11px]" aria-hidden="true"></i>
                 Reset
             </button>
@@ -237,7 +225,6 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @foreach ($menuItems as $item)
-                        <tr x-show="selectedCategoryId === '' || selectedCategoryId === '{{ $item->category_id }}'">
                         <tr
                             x-show="matchesItem('{{ $item->category_id }}', @js($item->name), @js($item->description ?? ''))"
                             class="transition-colors hover:bg-slate-50/80 dark:hover:bg-white/5"

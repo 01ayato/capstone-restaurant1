@@ -21,6 +21,7 @@ use App\Http\Controllers\Portal\ReviewsController;
 use App\Http\Controllers\Portal\SitController;
 use App\Http\Middleware\EnsureStaff;
 use Illuminate\Support\Facades\Route;
+    
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::get('/reviews', [ReviewsController::class, 'index'])->name('reviews.index');
