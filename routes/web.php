@@ -199,7 +199,7 @@ Route::post('/reset-password', function (Request $request) {
         : back()->withErrors(['email' => __($status)]);
 })->middleware('throttle:6,1')->name('password.update');
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'verified:auth.verify-email'])->group(function (): void {
     Route::prefix('module-management')->name('module-management.')->group(function (): void {
         Route::get('/module-settings', [ModuleSettingsController::class, 'index'])
             ->name('module-settings');
@@ -226,14 +226,15 @@ Route::middleware('auth')->group(function (): void {
             ->name('page-settings.restore-from-log');
     });
 
-    Route::post('/logout', function (Request $request) {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()
-            ->route('landing')
-            ->with('success', __('You have been signed out.'));
-    })->name('logout');
 });
+
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()
+        ->route('landing')
+        ->with('success', __('You have been signed out.'));
+})->middleware('auth')->name('logout');

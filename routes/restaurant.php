@@ -42,7 +42,7 @@ Route::prefix('cart')->name('cart.')->group(function (): void {
     Route::post('/remove', [CartController::class, 'remove'])->name('remove');
 });
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'verified:auth.verify-email'])->group(function (): void {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/checkout/scan-payment-proof', [CheckoutController::class, 'scanPaymentProof'])->name('checkout.scan-payment-proof');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
@@ -61,7 +61,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/feedback', [PortalFeedbackController::class, 'store'])->name('feedback.store');
 });
 
-Route::middleware(['auth', EnsureStaff::class])->group(function (): void {
+Route::middleware(['auth', 'verified:auth.verify-email', EnsureStaff::class])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('admin')->name('admin.')->group(function (): void {

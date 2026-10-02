@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard — ' . config('app.name'))
+@section('title', '  — ' . config('app.name'))
 
 @section('page-header')
     <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">

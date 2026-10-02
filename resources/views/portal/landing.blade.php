@@ -50,41 +50,39 @@
         </div>
     </section>
 
-    @guest
-        @if ($reviews->isNotEmpty())
-            <section id="reviews" class="border-t border-[#E8E3DB] px-4 py-14 sm:px-6 sm:py-16 lg:px-8 dark:border-white/10">
-                <div class="mx-auto max-w-7xl">
-                    <div class="text-center">
-                        <p class="text-xs font-bold uppercase tracking-widest text-orange-500">Testimonials</p>
-                        <h2 class="portal-heading mt-2 font-display text-3xl font-bold sm:text-4xl">Customer Reviews</h2>
-                        <p class="portal-muted mx-auto mt-3 max-w-xl">What our guests are saying about their experience.</p>
-                    </div>
-
-                    <div class="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-                        @foreach ($reviews as $review)
-                            <div class="portal-card p-6">
-                                <p class="text-amber-500">
-                                    {{ str_repeat('★', $review->rating) }}<span class="text-gray-300">{{ str_repeat('★', 5 - $review->rating) }}</span>
-                                </p>
-                                @if ($review->comment)
-                                    <p class="portal-muted mt-3 text-sm leading-6">"{{ $review->comment }}"</p>
-                                @endif
-                                <p class="portal-heading mt-4 text-sm font-semibold">
-                                    {{ $review->user?->name ? \App\Support\NameMask::mask($review->user->name) : 'Guest' }}
-                                </p>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    @if ($totalApprovedReviews > $reviews->count())
-                        <div class="mt-10 text-center">
-                            <a href="{{ route('reviews.index') }}" class="inline-flex items-center gap-2 rounded-[10px] border border-[#E8E3DB] bg-white px-6 py-3 text-sm font-semibold text-[#0D2232] shadow-sm transition hover:bg-[#F3F0EB] dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
-                                View All Reviews <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                    @endif
+    @if ($reviews->isNotEmpty())
+        <section id="reviews" class="border-t border-[#E8E3DB] px-4 py-14 sm:px-6 sm:py-16 lg:px-8 dark:border-white/10">
+            <div class="mx-auto max-w-7xl">
+                <div class="text-center">
+                    <p class="text-xs font-bold uppercase tracking-widest text-orange-500">Testimonials</p>
+                    <h2 class="portal-heading mt-2 font-display text-3xl font-bold sm:text-4xl">Customer Reviews</h2>
+                    <p class="portal-muted mx-auto mt-3 max-w-xl">What our guests are saying about their experience.</p>
                 </div>
-            </section>
-        @endif
-    @endguest
+
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+                    @foreach ($reviews as $review)
+                        <div class="portal-card p-6">
+                            <p class="text-amber-500">
+                                {{ str_repeat('★', $review->rating) }}<span class="text-gray-300">{{ str_repeat('★', 5 - $review->rating) }}</span>
+                            </p>
+                            @if ($review->comment)
+                                <p class="portal-muted mt-3 text-sm leading-6">"{{ $review->comment }}"</p>
+                            @endif
+                            <p class="portal-heading mt-4 text-sm font-semibold">
+                                {{ $review->user?->name ? \App\Support\NameMask::mask($review->user->name) : 'Guest' }}
+                            </p>
+                        </div>
+                    @endforeach
+                </div>
+
+                @if ($totalApprovedReviews > $reviews->count())
+                    <div class="mt-10 text-center">
+                        <a href="{{ route('reviews.index') }}" class="inline-flex items-center gap-2 rounded-[10px] border border-[#E8E3DB] bg-white px-6 py-3 text-sm font-semibold text-[#0D2232] shadow-sm transition hover:bg-[#F3F0EB] dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
+                            View All Reviews <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endif
 @endsection

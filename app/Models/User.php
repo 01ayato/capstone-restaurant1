@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Mail\PasswordResetMail;
+use App\Services\EmailVerificationService;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,10 +14,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, MustVerifyEmailTrait;
 
     /**
      * @var list<string>
@@ -164,6 +166,11 @@ class User extends Authenticatable
         Mail::to($this->email)->send(new PasswordResetMail($this, $token));
     }
 
+    public function sendEmailVerificationNotification(): void
+    {
+        app(EmailVerificationService::class)->generateAndSend($this);
+    }
+
     /**
      * @return HasMany<Feedback, $this>
      */
@@ -190,13 +197,4 @@ class User extends Authenticatable
     {
         return $this->hasCompletedOrder() || $this->hasCompletedReservation();
     }
-
-    /**
-     * Check if user's email has been verified.
-     */
-    public function hasVerifiedEmail(): bool
-    {
-        return $this->email_verified_at !== null;
-    }
 }
-

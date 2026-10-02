@@ -29,9 +29,12 @@ class PageInstaller
     }
 
     /**
-     * Rewrite the page route file (e.g. after the parent module alias changes).
+     * Rewrite the page route file. Only pass $force = true when the parent module's alias
+     * actually changed (the existing file's route names/prefix are genuinely stale); otherwise
+     * this preserves any hand-added custom routes already on disk instead of clobbering them
+     * with the generated CRUD-only scaffold (e.g. when a seed migration re-runs in tests).
      */
-    public function syncPageWebRoutes(Page $page): void
+    public function syncPageWebRoutes(Page $page, bool $force = false): void
     {
         $page->loadMissing('module');
         if ($page->module === null) {
@@ -46,7 +49,10 @@ class PageInstaller
             return;
         }
 
-        File::put($dir.'/web.php', $this->routesFileContents($moduleAlias, $pageAlias));
+        $webPhpPath = $dir.'/web.php';
+        if ($force || ! File::exists($webPhpPath)) {
+            File::put($webPhpPath, $this->routesFileContents($moduleAlias, $pageAlias));
+        }
     }
 
     /**
@@ -98,7 +104,14 @@ class PageInstaller
             }
         }
 
-        File::put($newModuleDir.'/web.php', $this->routesFileContents($newModule->alias, $newAlias));
+        // Only regenerate web.php when the alias/module rename actually invalidated the old
+        // route names, or when it doesn't exist yet. Otherwise unrelated edits (sequence,
+        // icon, is_active, name, ...) would silently wipe out any custom routes a developer
+        // hand-added to the scaffold (e.g. show/status/receipt beyond the generated CRUD set).
+        $aliasOrModuleChanged = $oldModuleDir !== $newModuleDir || $oldAlias !== $newAlias;
+        if ($aliasOrModuleChanged || ! File::exists($newModuleDir.'/web.php')) {
+            File::put($newModuleDir.'/web.php', $this->routesFileContents($newModule->alias, $newAlias));
+        }
         File::put($newModuleDir.'/'.$newAlias.'.php', $this->baseFileContents($page, $newModule->alias));
 
         $this->syncPagesRegistryLog();
@@ -179,7 +192,11 @@ class PageInstaller
             File::put($basePath, $this->baseFileContents($page, $moduleAlias));
         }
 
-        File::put($dir.'/web.php', $this->routesFileContents($moduleAlias, $pageAlias));
+        // Don't clobber an existing web.php (e.g. a restored page whose code folder, with
+        // hand-added custom routes, was never removed from disk).
+        if (! File::exists($dir.'/web.php')) {
+            File::put($dir.'/web.php', $this->routesFileContents($moduleAlias, $pageAlias));
+        }
 
         $viewDir = $this->modulePageViewPath($moduleAlias, $pageAlias);
         File::ensureDirectoryExists($viewDir);

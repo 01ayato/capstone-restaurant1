@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\EmailVerificationCode;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,9 +34,43 @@ class RegistrationTest extends TestCase
             'last_name' => 'Santos',
             'name' => 'Maria Santos',
             'email' => 'maria@example.com',
+            'role_id' => Role::query()->where('slug', Role::SLUG_USER)->value('id'),
         ]);
 
-        $this->assertAuthenticatedAs(User::query()->where('email', 'maria@example.com')->firstOrFail());
+        $user = User::query()->where('email', 'maria@example.com')->firstOrFail();
+        $this->assertAuthenticatedAs($user);
         $this->assertDatabaseHas('roles', ['slug' => Role::SLUG_USER]);
+
+        $this->get(route('checkout.show'))
+            ->assertRedirect(route('auth.verify-email'));
+
+        $this->get(route('module.user_settings.index'))
+            ->assertRedirect(route('auth.verify-email'));
+
+        $this->get(route('auth.verify-email'))
+            ->assertOk()
+            ->assertSee('Verify Your Email');
+
+        $code = EmailVerificationCode::query()
+            ->where('user_id', $user->id)
+            ->latest('id')
+            ->firstOrFail()
+            ->code;
+
+        $this->post(route('auth.verify-email.perform'), ['code' => $code])
+            ->assertRedirect(route('landing'));
+
+        $this->assertNotNull($user->fresh()->email_verified_at);
+        $this->get(route('checkout.show'))
+            ->assertRedirect(route('menu.index'));
+    }
+
+    public function test_verified_users_can_access_authenticated_routes(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('checkout.show'))
+            ->assertRedirect(route('menu.index'));
     }
 }

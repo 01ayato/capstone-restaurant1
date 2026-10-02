@@ -72,7 +72,7 @@ class EmailVerificationService
         }
 
         $verification->verify();
-        $user->update(['email_verified_at' => now()]);
+        $user->markEmailAsVerified();
 
         return true;
     }

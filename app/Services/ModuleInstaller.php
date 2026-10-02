@@ -69,7 +69,7 @@ class ModuleInstaller
 
         $module->load('pages');
         foreach ($module->pages as $page) {
-            $this->pageInstaller->syncPageWebRoutes($page);
+            $this->pageInstaller->syncPageWebRoutes($page, force: true);
         }
 
         $this->syncModulesRegistryLog();
