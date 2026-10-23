@@ -125,6 +125,7 @@ export function registerMenuItemsPage(Alpine) {
                 category_id: String(item.category_id ?? ''),
                 name: item.name ?? '',
                 price: item.price ?? '',
+                base_prep_time: item.base_prep_time ?? 0,
                 description: item.description ?? '',
                 is_available: Boolean(item.is_available),
                 is_signature: Boolean(item.is_signature),

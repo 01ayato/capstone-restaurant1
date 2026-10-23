@@ -42,6 +42,18 @@
                                     <li>{{ $item->item_name }} × {{ $item->quantity }} — {{ \App\Support\Peso::format($item->line_total) }}</li>
                                 @endforeach
                             </ul>
+                            @php
+                                $estimatedPrepTime = $order->final_eta ?? $order->system_eta;
+                            @endphp
+                            @if ($estimatedPrepTime !== null)
+                                <div class="mt-4 flex items-start gap-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-400/30 dark:bg-slate-800">
+                                    <i class="fa-regular fa-clock mt-0.5 text-orange-600 dark:text-orange-400" aria-hidden="true"></i>
+                                    <p class="text-sm text-slate-900 dark:text-slate-100">
+                                        <span class="font-semibold">Estimated Preparation Time:</span>
+                                        {{ $estimatedPrepTime }} {{ (int) $estimatedPrepTime === 1 ? 'minute' : 'minutes' }}
+                                    </p>
+                                </div>
+                            @endif
                             <p class="mt-4 text-right text-lg font-bold text-gray-900">Total: {{ $order->formattedTotal() }}</p>
                             @if ($order->status === \App\Models\Order::STATUS_COMPLETED)
                                 <div class="mt-3 text-right">

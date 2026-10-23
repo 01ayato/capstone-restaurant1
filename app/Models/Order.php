@@ -55,6 +55,8 @@ class Order extends Model
         'deposit_credit',
         'total',
         'status',
+        'system_eta',
+        'final_eta',
         'special_instructions',
     ];
 

@@ -162,6 +162,7 @@ class MenuItemController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'numeric', 'min:0'],
+            'base_prep_time' => ['required', 'integer', 'min:0'],
             'is_available' => ['nullable', 'boolean'],
             'is_signature' => ['nullable', 'boolean'],
             'stock_level' => ['nullable', 'integer', 'min:0'],

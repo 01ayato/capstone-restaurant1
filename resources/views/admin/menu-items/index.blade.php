@@ -109,6 +109,10 @@
                                     <input name="price" type="number" step="0.01" min="0" required class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
                                 </div>
                                 <div>
+                                    <label for="add-item-base-prep-time" class="mb-1 block text-xs font-medium text-gray-500">Base Prep Time (mins)</label>
+                                    <input id="add-item-base-prep-time" name="base_prep_time" type="number" min="0" step="1" value="0" required class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                                </div>
+                                <div>
                                     <label class="mb-1 block text-xs font-medium text-gray-500">Image</label>
                                     <input name="image" type="file" accept="image/*" class="w-full text-sm">
                                 </div>
@@ -281,6 +285,7 @@
                                         'category_id' => $item->category_id,
                                         'name' => $item->name,
                                         'price' => (float) $item->price,
+                                        'base_prep_time' => $item->base_prep_time,
                                         'description' => $item->description,
                                         'is_available' => $item->is_available,
                                         'is_signature' => $item->is_signature,
@@ -578,6 +583,10 @@
                             <div>
                                 <label for="edit-item-price" class="mb-1 block text-xs font-medium text-zinc-500">Price (₱)</label>
                                 <input id="edit-item-price" name="price" type="number" step="0.01" min="0" required x-model="editItem.price" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
+                            </div>
+                            <div>
+                                <label for="edit-item-base-prep-time" class="mb-1 block text-xs font-medium text-zinc-500">Base Prep Time (mins)</label>
+                                <input id="edit-item-base-prep-time" name="base_prep_time" type="number" min="0" step="1" required x-model="editItem.base_prep_time" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
                             </div>
                             <div>
                                 <label for="edit-item-description" class="mb-1 block text-xs font-medium text-zinc-500">Description</label>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\ModuleManagement\ModuleSettingsController;
 use App\Http\Controllers\ModuleManagement\PageSettingsController;
 use App\Models\Role;
@@ -227,6 +228,10 @@ Route::middleware(['auth', 'verified:auth.verify-email'])->group(function (): vo
     });
 
 });
+
+Route::get('/kitchen', [KitchenController::class, 'index']);
+Route::post('/kitchen/orders/{order}/accept', [KitchenController::class, 'acceptOrder'])
+    ->name('kitchen.orders.accept');
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();

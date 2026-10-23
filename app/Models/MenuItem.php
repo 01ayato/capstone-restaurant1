@@ -19,6 +19,8 @@ class MenuItem extends Model
         'image',
         'is_available',
         'is_signature',
+        'base_prep_time',
+        'station',
         'stock_level',
         'reorder_level',
         'sort_order',

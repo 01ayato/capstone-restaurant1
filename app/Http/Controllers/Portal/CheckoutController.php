@@ -140,8 +140,14 @@ class CheckoutController extends Controller
         }
 
         $order = DB::transaction(function () use ($cart, $validated, $deliveryAddress, $paymentProofPath, $paymentReference, $paymentAmountPaid, $applicableReservation, $depositCredit, $amountDue, $inventory) {
+            $cartItems = $cart->items();
+            $kitchenItems = $cartItems->filter(fn ($line): bool => $line->item->station === 'kitchen');
+            $systemEta = $kitchenItems->isEmpty()
+                ? null
+                : (int) $kitchenItems->max(fn ($line): int => (int) $line->item->base_prep_time) + 5;
+
             $inventoryLines = [];
-            foreach ($cart->items() as $line) {
+            foreach ($cartItems as $line) {
                 $inventoryLines[] = [
                     'menu_item_id' => $line->item->id,
                     'quantity' => $line->quantity,
@@ -164,6 +170,7 @@ class CheckoutController extends Controller
                 'delivery_fee' => $cart->deliveryFee(),
                 'deposit_credit' => $depositCredit,
                 'total' => $amountDue,
+                'system_eta' => $systemEta,
                 'status' => Order::STATUS_PENDING,
                 'special_instructions' => $validated['special_instructions'] ?? null,
             ]);
@@ -175,7 +182,7 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            foreach ($cart->items() as $line) {
+            foreach ($cartItems as $line) {
                 OrderItem::query()->create([
                     'order_id' => $order->id,
                     'menu_item_id' => $line->item->id,
@@ -193,6 +200,9 @@ class CheckoutController extends Controller
         $cart->clear();
 
         $successMessage = "Order {$order->order_number} placed successfully!";
+        if ($order->system_eta !== null) {
+            $successMessage .= " Estimated preparation time: {$order->system_eta} minutes.";
+        }
 
         if ($order->payment_reference || $order->payment_amount_paid) {
             $parts = [];
