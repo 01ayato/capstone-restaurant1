@@ -25,6 +25,7 @@ class KitchenController extends Controller implements HasMiddleware
 
         $orders = Order::query()
             ->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PREPARING])
+            ->where('payment_status', Order::PAYMENT_STATUS_PAID)
             ->whereHas('items.menuItem', function ($query): void {
                 $query->where('station', 'kitchen');
             })
@@ -52,6 +53,7 @@ class KitchenController extends Controller implements HasMiddleware
     public function acceptOrder(Request $request, Order $order): JsonResponse
     {
         $this->authorizeKitchenAccess($request);
+        abort_unless($order->payment_status === Order::PAYMENT_STATUS_PAID, 409, 'Order payment is not complete.');
 
         $validated = $request->validate([
             'final_eta' => ['required', 'integer', 'min:1'],

@@ -10,23 +10,26 @@ use App\Models\RestaurantSetting;
 use App\Models\TableGroup;
 use App\Services\CartService;
 use App\Services\InventoryService;
-use App\Services\PaymentProofOcrService;
 use App\Services\ReservationMailService;
+use App\Services\XenditException;
+use App\Services\XenditService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class ReservationController extends Controller
 {
     public function index(CartService $cart): View
     {
+        $paymentMethod = old('deposit_payment_method', 'cash');
+        if (! in_array($paymentMethod, ['cash', 'xendit'], true)) {
+            $paymentMethod = 'cash';
+        }
+
         $reservations = auth()->check()
             ? Reservation::query()
                 ->where('user_id', auth()->id())
@@ -44,10 +47,10 @@ class ReservationController extends Controller
             'defaultDuration' => Reservation::DEFAULT_DURATION_MINUTES,
             'tableDeposit' => Reservation::TABLE_DEPOSIT_AMOUNT,
             'preorderDeposit' => Reservation::PREORDER_DEPOSIT_AMOUNT,
-            'depositScanUrl' => route('reservations.scan-payment-proof'),
             'availabilityUrl' => route('reservations.availability'),
             'openingHoursLabel' => Reservation::OPENING_HOURS_LABEL,
             'openHour' => Reservation::OPEN_HOUR,
+            'paymentMethod' => old('deposit_payment_method', 'cash'),
             'reservations' => $reservations,
         ]);
     }
@@ -123,32 +126,12 @@ class ReservationController extends Controller
         ]);
     }
 
-    public function scanPaymentProof(Request $request, PaymentProofOcrService $ocr): JsonResponse
-    {
-        $request->validate([
-            'payment_proof' => ['required', 'image', 'max:4096'],
-            'payment_method' => ['required', 'in:gcash'],
-        ]);
-
-        try {
-            $result = $ocr->extractFromUpload($request->file('payment_proof'));
-
-            return response()->json([
-                'reference_number' => $result['reference_number'],
-                'amount_paid' => $result['amount_paid'],
-                'amount_paid_label' => $result['amount_paid'] !== null
-                    ? '₱'.number_format($result['amount_paid'], 2)
-                    : null,
-                'message' => 'Reference and amount detected from screenshot.',
-            ]);
-        } catch (\Throwable) {
-            return response()->json([
-                'message' => 'Could not read the payment screenshot. Try a clearer image.',
-            ], 422);
-        }
-    }
-
-    public function store(Request $request, InventoryService $inventory, ReservationMailService $mailer): RedirectResponse
+    public function store(
+        Request $request,
+        InventoryService $inventory,
+        ReservationMailService $mailer,
+        XenditService $xendit
+    ): RedirectResponse
     {
         $validated = $request->validate([
             'dining_table_id' => ['required', 'integer', 'exists:dining_tables,id'],
@@ -163,13 +146,8 @@ class ReservationController extends Controller
             'items' => ['nullable', 'array'],
             'items.*.menu_item_id' => ['required_with:items', 'integer', 'exists:menu_items,id'],
             'items.*.quantity' => ['required_with:items', 'integer', 'min:1', 'max:99'],
-            'deposit_payment_method' => ['required', 'in:cash,gcash'],
-            'deposit_payment_proof' => [
-                Rule::requiredIf(in_array($request->input('deposit_payment_method'), ['gcash'], true)),
-                'nullable',
-                'image',
-                'max:4096',
-            ],
+            'deposit_payment_method' => ['required', 'in:cash,xendit'],
+            'deposit_payment_proof' => ['prohibited'],
         ]);
 
         $table = DiningTable::query()->with('activeOccupancy')->findOrFail($validated['dining_table_id']);
@@ -221,80 +199,90 @@ class ReservationController extends Controller
                 ->withErrors(['reserved_at' => 'That table is already reserved around that time. Please pick another time or table.']);
         }
 
-        $depositProofPath = null;
-        $depositReference = null;
-        $depositAmountPaid = null;
         $depositStatus = Reservation::DEPOSIT_STATUS_PENDING_AT_RESTAURANT;
         $depositPaidAt = null;
 
-        if ($request->hasFile('deposit_payment_proof')) {
-            $file = $request->file('deposit_payment_proof');
-            $depositProofPath = $this->storePaymentProof($file);
-
-            try {
-                $ocr = app(PaymentProofOcrService::class);
-                $ocrResult = $ocr->extractFromUpload($file);
-                $depositReference = $ocrResult['reference_number'];
-                $depositAmountPaid = $ocrResult['amount_paid'];
-            } catch (\Throwable) {
-                //
-            }
-
-            $depositStatus = Reservation::DEPOSIT_STATUS_PAID;
-            $depositPaidAt = now();
-        } elseif ($validated['deposit_payment_method'] === 'cash') {
+        if ($validated['deposit_payment_method'] === 'cash') {
             $depositStatus = Reservation::DEPOSIT_STATUS_PENDING_AT_RESTAURANT;
+        } elseif ($validated['deposit_payment_method'] === 'xendit') {
+            $depositStatus = Reservation::DEPOSIT_STATUS_PENDING;
         }
 
-        $reservation = DB::transaction(function () use (
-            $inventory,
-            $preorderItems,
-            $table,
-            $validated,
-            $additionalChairs,
-            $deposits,
-            $depositProofPath,
-            $depositReference,
-            $depositAmountPaid,
-            $depositStatus,
-            $depositPaidAt,
-            $start,
-            $duration
-        ): Reservation {
-            if ($preorderItems !== []) {
-                $inventory->deduct($preorderItems);
-            }
+        try {
+            [$reservation, $invoiceUrl] = DB::transaction(function () use (
+                $inventory,
+                $preorderItems,
+                $table,
+                $validated,
+                $additionalChairs,
+                $deposits,
+                $depositStatus,
+                $depositPaidAt,
+                $start,
+                $duration,
+                $xendit
+            ): array {
+                if ($preorderItems !== []) {
+                    $inventory->deduct($preorderItems);
+                }
 
-            return Reservation::query()->create([
-                'user_id' => auth()->id(),
-                'dining_table_id' => $table->id,
-                'customer_name' => $validated['customer_name'],
-                'contact_number' => $validated['contact_number'],
-                'email' => $validated['email'] ?? auth()->user()?->email,
-                'party_size' => $validated['party_size'],
-                'additional_chairs' => $additionalChairs,
-                'table_deposit_amount' => $deposits['table_deposit'],
-                'preorder_deposit_amount' => $deposits['preorder_deposit'],
-                'deposit_total' => $deposits['total'],
-                'deposit_payment_method' => $validated['deposit_payment_method'],
-                'deposit_payment_proof' => $depositProofPath,
-                'deposit_payment_reference' => $depositReference,
-                'deposit_payment_amount_paid' => $depositAmountPaid,
-                'deposit_status' => $depositStatus,
-                'deposit_paid_at' => $depositPaidAt,
-                'reserved_at' => $start,
-                'duration_minutes' => $duration,
-                'notes' => $validated['notes'] ?? null,
-                'preorder_items' => $preorderItems !== [] ? $preorderItems : null,
-                'status' => Reservation::STATUS_PENDING,
-            ]);
-        });
+                $reservation = Reservation::query()->create([
+                    'user_id' => auth()->id(),
+                    'dining_table_id' => $table->id,
+                    'customer_name' => $validated['customer_name'],
+                    'contact_number' => $validated['contact_number'],
+                    'email' => $validated['email'] ?? auth()->user()?->email,
+                    'party_size' => $validated['party_size'],
+                    'additional_chairs' => $additionalChairs,
+                    'table_deposit_amount' => $deposits['table_deposit'],
+                    'preorder_deposit_amount' => $deposits['preorder_deposit'],
+                    'deposit_total' => $deposits['total'],
+                    'deposit_payment_method' => $validated['deposit_payment_method'],
+                    'deposit_status' => $depositStatus,
+                    'deposit_paid_at' => $depositPaidAt,
+                    'reserved_at' => $start,
+                    'duration_minutes' => $duration,
+                    'notes' => $validated['notes'] ?? null,
+                    'preorder_items' => $preorderItems !== [] ? $preorderItems : null,
+                    'status' => Reservation::STATUS_PENDING,
+                ]);
+
+                $invoiceUrl = null;
+                if ($validated['deposit_payment_method'] === 'xendit') {
+                    $invoice = $xendit->createInvoice(
+                        "reservation-{$reservation->id}",
+                        (float) $reservation->deposit_total,
+                        "Smoke 'n' Grill reservation deposit #{$reservation->id}",
+                        route('reservations.mine'),
+                        route('reservations.mine'),
+                    );
+
+                    $reservation->update([
+                        'xendit_invoice_id' => $invoice['id'],
+                        'xendit_invoice_url' => $invoice['url'],
+                    ]);
+                    $invoiceUrl = $invoice['url'];
+                }
+
+                return [$reservation, $invoiceUrl];
+            });
+        } catch (XenditException $exception) {
+            return back()
+                ->withInput()
+                ->withErrors(['deposit_payment_method' => $exception->getMessage()]);
+        }
 
         $mailer->sendCreated($reservation->load(['diningTable.tableGroup', 'user']));
+
+        if ($invoiceUrl !== null) {
+            return redirect()->away($invoiceUrl);
+        }
 
         $depositMessage = '₱'.number_format($deposits['total'], 2).' deposit recorded';
         if ($depositStatus === Reservation::DEPOSIT_STATUS_PAID) {
             $depositMessage .= ' — this will be deducted from your final bill when you order.';
+        } elseif ($depositStatus === Reservation::DEPOSIT_STATUS_PENDING) {
+            $depositMessage .= ' — complete the online payment to confirm your reservation.';
         } else {
             $depositMessage .= ' — please pay at the restaurant to confirm. It will be deducted from your final bill.';
         }
@@ -346,19 +334,6 @@ class ReservationController extends Controller
             ->when($tableId, fn ($q) => $q->where('dining_table_id', $tableId))
             ->orderByDesc('reserved_at')
             ->first();
-    }
-
-    private function storePaymentProof(UploadedFile $file): string
-    {
-        $directory = public_path('images/payment-proofs');
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->move($directory, $filename);
-
-        return 'images/payment-proofs/'.$filename;
     }
 
     /**

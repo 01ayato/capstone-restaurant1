@@ -44,4 +44,11 @@ return [
         'key' => env('BREVO_API_KEY'),
     ],
 
+    'xendit' => [
+        'secret_key' => env('XENDIT_SECRET_KEY'),
+        'webhook_token' => env('XENDIT_WEBHOOK_TOKEN'),
+        'currency' => 'PHP',
+        'invoice_url' => 'https://api.xendit.co/v2/invoices',
+    ],
+
 ];

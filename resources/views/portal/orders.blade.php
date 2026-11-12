@@ -37,6 +37,13 @@
                                     {{ $order->statusLabel() }}
                                 </span>
                             </div>
+                            <p class="mt-3 text-sm text-gray-600">
+                                Payment: <span class="font-semibold">{{ $order->paymentMethodLabel() }}</span>
+                                <span class="text-gray-400">·</span>
+                                <span class="{{ $order->payment_status === \App\Models\Order::PAYMENT_STATUS_PAID ? 'text-emerald-700' : 'text-amber-700' }}">
+                                    {{ $order->paymentStatusLabel() }}
+                                </span>
+                            </p>
                             <ul class="mt-4 space-y-1 text-sm text-gray-500">
                                 @foreach ($order->items as $item)
                                     <li>{{ $item->item_name }} × {{ $item->quantity }} — {{ \App\Support\Peso::format($item->line_total) }}</li>

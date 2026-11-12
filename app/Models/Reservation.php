@@ -54,17 +54,23 @@ class Reservation extends Model
 
     public const DEPOSIT_STATUS_PENDING_AT_RESTAURANT = 'pending_at_restaurant';
 
+    public const DEPOSIT_STATUS_PENDING = 'pending';
+
     public const DEPOSIT_STATUS_PAID = 'paid';
 
     public const DEPOSIT_STATUS_APPLIED = 'applied';
 
     public const DEPOSIT_STATUS_REFUNDED = 'refunded';
 
+    public const DEPOSIT_STATUS_EXPIRED = 'expired';
+
     public const DEPOSIT_STATUS_LABELS = [
         self::DEPOSIT_STATUS_PENDING_AT_RESTAURANT => 'Pay at restaurant',
+        self::DEPOSIT_STATUS_PENDING => 'Awaiting online payment',
         self::DEPOSIT_STATUS_PAID => 'Paid',
         self::DEPOSIT_STATUS_APPLIED => 'Applied to bill',
         self::DEPOSIT_STATUS_REFUNDED => 'Refunded',
+        self::DEPOSIT_STATUS_EXPIRED => 'Payment expired',
     ];
 
     protected $fillable = [
@@ -84,6 +90,8 @@ class Reservation extends Model
         'deposit_payment_amount_paid',
         'deposit_status',
         'deposit_paid_at',
+        'xendit_invoice_id',
+        'xendit_invoice_url',
         'applied_order_id',
         'reserved_at',
         'duration_minutes',

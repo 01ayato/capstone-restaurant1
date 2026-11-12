@@ -26,7 +26,10 @@
                 <div><dt class="text-gray-500">Name</dt><dd class="font-medium">{{ $order->customer_name }}</dd></div>
                 <div><dt class="text-gray-500">Contact</dt><dd>{{ $order->contact_number }}</dd></div>
                 <div><dt class="text-gray-500">Table / Notes</dt><dd>{{ $order->delivery_address }}</dd></div>
-                <div><dt class="text-gray-500">Payment</dt><dd>{{ $order->paymentMethodLabel() }}</dd></div>
+                <div>
+                    <dt class="text-gray-500">Payment</dt>
+                    <dd>{{ $order->paymentMethodLabel() }} · {{ $order->paymentStatusLabel() }}</dd>
+                </div>
                 @if ($order->paymentProofUrl())
                     <div>
                         <dt class="text-gray-500">Payment proof</dt>

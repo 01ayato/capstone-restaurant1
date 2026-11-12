@@ -19,9 +19,14 @@ use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\Portal\ReservationController as PortalReservationController;
 use App\Http\Controllers\Portal\ReviewsController;
 use App\Http\Controllers\Portal\SitController;
+use App\Http\Controllers\XenditWebhookController;
 use App\Http\Middleware\EnsureStaff;
 use Illuminate\Support\Facades\Route;
     
+
+Route::post('/webhooks/xendit', XenditWebhookController::class)
+    ->middleware('throttle:60,1')
+    ->name('webhooks.xendit');
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::get('/reviews', [ReviewsController::class, 'index'])->name('reviews.index');
@@ -44,7 +49,6 @@ Route::prefix('cart')->name('cart.')->group(function (): void {
 
 Route::middleware(['auth', 'verified:auth.verify-email'])->group(function (): void {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
-    Route::post('/checkout/scan-payment-proof', [CheckoutController::class, 'scanPaymentProof'])->name('checkout.scan-payment-proof');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -53,7 +57,6 @@ Route::middleware(['auth', 'verified:auth.verify-email'])->group(function (): vo
     Route::get('/reservations', [PortalReservationController::class, 'index'])->name('reservations.index');
     Route::get('/my-reservations', [PortalReservationController::class, 'mine'])->name('reservations.mine');
     Route::get('/reservations/availability', [PortalReservationController::class, 'availability'])->name('reservations.availability');
-    Route::post('/reservations/scan-payment-proof', [PortalReservationController::class, 'scanPaymentProof'])->name('reservations.scan-payment-proof');
     Route::post('/reservations', [PortalReservationController::class, 'store'])->name('reservations.store');
     Route::patch('/reservations/{reservation}/cancel', [PortalReservationController::class, 'cancel'])->name('reservations.cancel');
 

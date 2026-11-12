@@ -20,11 +20,10 @@
         'step' => $errors->any() ? 4 : 1,
         'tableDeposit' => $tableDeposit,
         'preorderDeposit' => $preorderDeposit,
-        'depositScanUrl' => $depositScanUrl,
         'availabilityUrl' => $availabilityUrl,
         'openingHoursLabel' => $openingHoursLabel,
         'openHour' => $openHour,
-        'csrfToken' => csrf_token(),
+        'paymentMethod' => $paymentMethod,
     ];
 @endphp
 
@@ -107,7 +106,7 @@
                                 </p>
                             </nav>
 
-                            <form action="{{ route('reservations.store') }}" method="post" enctype="multipart/form-data">
+                            <form action="{{ route('reservations.store') }}" method="post">
                                 @csrf
                                 <input type="hidden" name="dining_table_id" x-bind:value="selectedTableId">
                                 <input type="hidden" name="customer_name" x-bind:value="customerName">
@@ -388,13 +387,14 @@
                                     <div>
                                         <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">How will you pay the deposit?</label>
                                         <div class="space-y-2">
-                                            @foreach (\App\Models\Order::PAYMENT_METHODS as $value => $label)
+                                            @foreach (\App\Models\Order::PORTAL_PAYMENT_METHODS as $value => $label)
                                                 <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 transition has-[:checked]:border-orange-500/50 has-[:checked]:bg-orange-500/10">
                                                     <input type="radio" name="deposit_payment_method" value="{{ $value }}" x-model="paymentMethod" class="text-orange-500">
                                                     <span class="text-sm text-gray-900">{{ $label }}</span>
                                                 </label>
                                             @endforeach
                                         </div>
+                                        @error('deposit_payment_method')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
                                     </div>
 
                                     <div x-show="paymentMethod === 'cash'" x-cloak class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-700">
@@ -402,30 +402,10 @@
                                         Pay <span x-text="formatMoney(depositBreakdown().total)"></span> at the restaurant before your reserved time. Staff will deduct it from your bill.
                                     </div>
 
-                                    <div x-show="paymentMethod === 'gcash'" x-cloak class="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
-                                        <label for="deposit_payment_proof" class="mb-2 block text-xs font-bold uppercase tracking-widest text-orange-700">
-                                            Payment screenshot
-                                        </label>
-                                        <p class="mb-3 text-xs text-gray-500">Upload your GCash transfer screenshot for <span x-text="formatMoney(depositBreakdown().total)"></span>.</p>
-                                        <input
-                                            id="deposit_payment_proof"
-                                            name="deposit_payment_proof"
-                                            type="file"
-                                            accept="image/*"
-                                            class="block w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
-                                            x-bind:required="paymentMethod === 'gcash'"
-                                            @change="onDepositProofSelected($event)"
-                                        >
-                                        <div x-show="scanning" class="mt-3 flex items-center gap-2 text-xs text-orange-700">
-                                            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Reading screenshot…
-                                        </div>
-                                        <p x-show="scanError" x-text="scanError" class="mt-2 text-xs text-red-700"></p>
-                                        <div x-show="referenceNumber || amountPaidLabel" x-cloak class="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
-                                            <p x-show="referenceNumber">Ref: <span class="font-semibold" x-text="referenceNumber"></span></p>
-                                            <p x-show="amountPaidLabel">Paid: <span class="font-semibold" x-text="amountPaidLabel"></span></p>
-                                            <p x-show="depositAmountMismatch()" class="mt-1 text-amber-700">Amount is less than the required deposit. Please verify.</p>
-                                        </div>
+                                    <div x-show="paymentMethod === 'xendit'" x-cloak class="rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 text-xs text-sky-800">
+                                        You will be redirected to Xendit's secure test checkout. Your reservation is confirmed after the payment is verified.
                                     </div>
+
                                 </div>
 
                                 {{-- Navigation --}}

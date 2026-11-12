@@ -39,6 +39,23 @@ class Order extends Model
         'gcash' => 'GCash',
     ];
 
+    public const PORTAL_PAYMENT_METHODS = [
+        'cash' => 'Cash',
+        'xendit' => 'Online payment (Xendit)',
+    ];
+
+    public const PAYMENT_STATUS_PENDING = 'pending';
+
+    public const PAYMENT_STATUS_PAID = 'paid';
+
+    public const PAYMENT_STATUS_EXPIRED = 'expired';
+
+    public const PAYMENT_STATUS_LABELS = [
+        self::PAYMENT_STATUS_PENDING => 'Awaiting payment',
+        self::PAYMENT_STATUS_PAID => 'Paid',
+        self::PAYMENT_STATUS_EXPIRED => 'Payment expired',
+    ];
+
     protected $fillable = [
         'order_number',
         'user_id',
@@ -50,6 +67,9 @@ class Order extends Model
         'payment_proof',
         'payment_reference',
         'payment_amount_paid',
+        'payment_status',
+        'xendit_invoice_id',
+        'xendit_invoice_url',
         'subtotal',
         'delivery_fee',
         'deposit_credit',
@@ -106,7 +126,14 @@ class Order extends Model
             return 'Cash';
         }
 
-        return self::PAYMENT_METHODS[$this->payment_method] ?? ucfirst(str_replace('_', ' ', $this->payment_method));
+        return self::PORTAL_PAYMENT_METHODS[$this->payment_method]
+            ?? self::PAYMENT_METHODS[$this->payment_method]
+            ?? ucfirst(str_replace('_', ' ', $this->payment_method));
+    }
+
+    public function paymentStatusLabel(): string
+    {
+        return self::PAYMENT_STATUS_LABELS[$this->payment_status] ?? ucfirst((string) $this->payment_status);
     }
 
     public function requiresPaymentProof(): bool

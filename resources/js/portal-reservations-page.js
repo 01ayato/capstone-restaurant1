@@ -20,17 +20,10 @@ export function registerPortalReservationsPage(Alpine) {
         menuSearch: '',
         tableDeposit: Number(initial?.tableDeposit ?? 500) || 500,
         preorderDeposit: Number(initial?.preorderDeposit ?? 500) || 500,
-        depositScanUrl: initial?.depositScanUrl ?? '',
         availabilityUrl: initial?.availabilityUrl ?? '',
         openingHoursLabel: initial?.openingHoursLabel ?? 'Mon–Sun · 2:00 PM – 12:00 AM',
         openHour: Number(initial?.openHour ?? 14) || 14,
-        csrfToken: initial?.csrfToken ?? '',
-        paymentMethod: initial?.paymentMethod ?? 'gcash',
-        scanning: false,
-        scanError: null,
-        scanMessage: null,
-        referenceNumber: null,
-        amountPaidLabel: null,
+        paymentMethod: initial?.paymentMethod ?? 'cash',
         bookedTableIds: [],
         occupiedTableIds: [],
         withinOpeningHours: true,
@@ -438,11 +431,6 @@ export function registerPortalReservationsPage(Alpine) {
                 return false;
             }
 
-            if (this.paymentMethod === 'gcash') {
-                const proof = document.getElementById('deposit_payment_proof');
-                return Boolean(proof?.files?.length);
-            }
-
             return true;
         },
 
@@ -454,61 +442,6 @@ export function registerPortalReservationsPage(Alpine) {
                 preorder,
                 total: this.tableDeposit + preorder,
             };
-        },
-
-        async onDepositProofSelected(event) {
-            const file = event.target.files?.[0];
-            this.scanError = null;
-            this.scanMessage = null;
-            this.referenceNumber = null;
-            this.amountPaidLabel = null;
-
-            if (!file || !this.depositScanUrl) {
-                return;
-            }
-
-            if (this.paymentMethod !== 'gcash') {
-                return;
-            }
-
-            this.scanning = true;
-
-            try {
-                const body = new FormData();
-                body.append('payment_proof', file);
-                body.append('payment_method', this.paymentMethod);
-                body.append('_token', this.csrfToken);
-
-                const response = await fetch(this.depositScanUrl, {
-                    method: 'POST',
-                    body,
-                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                });
-
-                const payload = await response.json();
-
-                if (!response.ok) {
-                    this.scanError = payload.message || 'Could not read the payment screenshot.';
-                    return;
-                }
-
-                this.referenceNumber = payload.reference_number || null;
-                this.amountPaidLabel = payload.amount_paid_label || null;
-                this.scanMessage = payload.message || null;
-            } catch {
-                this.scanError = 'Could not upload payment proof. Please try again.';
-            } finally {
-                this.scanning = false;
-            }
-        },
-
-        depositAmountMismatch() {
-            if (!this.amountPaidLabel) {
-                return false;
-            }
-
-            const paid = Number(String(this.amountPaidLabel).replace(/[^\d.]/g, ''));
-            return paid > 0 && paid < this.depositBreakdown().total;
         },
 
         stepStatus(stepNum) {
