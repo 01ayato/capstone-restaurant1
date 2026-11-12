@@ -55,26 +55,41 @@ class Feedback extends Model
         return self::STATUS_LABELS[$this->status] ?? ucfirst($this->status);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Reservation, $this>
+     */
     public function reservation(): BelongsTo
     {
         return $this->belongsTo(Reservation::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function reviewedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function contactedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'contacted_by');

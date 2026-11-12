@@ -44,6 +44,7 @@ Route::prefix('cart')->name('cart.')->group(function (): void {
 
 Route::middleware(['auth', 'verified:auth.verify-email'])->group(function (): void {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::post('/checkout/scan-payment-proof', [CheckoutController::class, 'scanPaymentProof'])->name('checkout.scan-payment-proof');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
