@@ -232,6 +232,12 @@ Route::middleware(['auth', 'verified:auth.verify-email'])->group(function (): vo
 Route::get('/kitchen', [KitchenController::class, 'index']);
 Route::post('/kitchen/orders/{order}/accept', [KitchenController::class, 'acceptOrder'])
     ->name('kitchen.orders.accept');
+Route::post('/kitchen/orders/{order}/ready', [KitchenController::class, 'markOrderReady'])
+    ->name('kitchen.orders.ready');
+Route::post('/kitchen/preorders/{reservation}/accept', [KitchenController::class, 'acceptPreorder'])
+    ->name('kitchen.preorders.accept');
+Route::post('/kitchen/preorders/{reservation}/ready', [KitchenController::class, 'markPreorderReady'])
+    ->name('kitchen.preorders.ready');
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();

@@ -55,8 +55,41 @@
                                 autofocus
                                 class="block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                             />
-                            <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-indigo-600 transition">
-                                <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                            <button
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                                :aria-pressed="showPassword"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-indigo-600 transition"
+                            >
+                                <svg
+                                    x-cloak
+                                    x-show="!showPassword"
+                                    class="size-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M2.25 12s3.5-6.75 9.75-6.75S21.75 12 21.75 12 18.25 18.75 12 18.75 2.25 12 2.25 12Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg
+                                    x-cloak
+                                    x-show="showPassword"
+                                    class="size-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    aria-hidden="true"
+                                >
+                                    <path d="m3 3 18 18" />
+                                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                                    <path d="M9.9 5.1A10.8 10.8 0 0 1 12 4.9c6.3 0 9.8 7.1 9.8 7.1a17 17 0 0 1-3.1 4.1" />
+                                    <path d="M6.6 6.6C3.8 8.5 2.2 12 2.2 12s3.5 7.1 9.8 7.1a10 10 0 0 0 3.1-.5" />
+                                </svg>
                             </button>
                         </div>
                         @error('password')
@@ -77,8 +110,41 @@
                                 required
                                 class="block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                             />
-                            <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-indigo-600 transition">
-                                <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                            <button
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                                :aria-pressed="showPassword"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-indigo-600 transition"
+                            >
+                                <svg
+                                    x-cloak
+                                    x-show="!showPassword"
+                                    class="size-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M2.25 12s3.5-6.75 9.75-6.75S21.75 12 21.75 12 18.25 18.75 12 18.75 2.25 12 2.25 12Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg
+                                    x-cloak
+                                    x-show="showPassword"
+                                    class="size-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    aria-hidden="true"
+                                >
+                                    <path d="m3 3 18 18" />
+                                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                                    <path d="M9.9 5.1A10.8 10.8 0 0 1 12 4.9c6.3 0 9.8 7.1 9.8 7.1a17 17 0 0 1-3.1 4.1" />
+                                    <path d="M6.6 6.6C3.8 8.5 2.2 12 2.2 12s3.5 7.1 9.8 7.1a10 10 0 0 0 3.1-.5" />
+                                </svg>
                             </button>
                         </div>
                     </div>

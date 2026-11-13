@@ -16,7 +16,7 @@
                     <h2 id="pending-orders-heading" class="text-lg font-bold text-gray-900 dark:text-white">Pending Orders</h2>
                     <p class="mt-1 text-sm text-gray-500 dark:text-white/55">Review and accept new orders.</p>
                 </div>
-                <span class="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-amber-100 px-2 text-sm font-bold text-amber-800 dark:bg-amber-400/15 dark:text-amber-300">{{ $orders->where('status', \App\Models\Order::STATUS_PENDING)->count() }}</span>
+                <span class="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-amber-100 px-2 text-sm font-bold text-amber-800 dark:bg-amber-400/15 dark:text-amber-300">{{ $orders->where('status', \App\Models\Order::STATUS_PENDING)->count() + $preorders->where('preorder_kitchen_status', \App\Models\Reservation::PREORDER_KITCHEN_STATUS_PENDING)->count() }}</span>
             </div>
     
             <div class="space-y-4">
@@ -116,11 +116,61 @@
                         ><span x-show="!submitting">Accept Order</span><span x-cloak x-show="submitting">Accepting...</span></button>
                     </article>
                 @empty
-                    <div class="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-6 py-10 text-center dark:border-white/15 dark:bg-white/[0.03]">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">No pending kitchen orders</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-white/55">New kitchen orders will appear here.</p>
-                    </div>
+                    @if ($preorders->where('preorder_kitchen_status', \App\Models\Reservation::PREORDER_KITCHEN_STATUS_PENDING)->isEmpty())
+                        <div class="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-6 py-10 text-center dark:border-white/15 dark:bg-white/[0.03]">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">No pending kitchen orders</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-white/55">New kitchen orders will appear here.</p>
+                        </div>
+                    @endif
                 @endforelse
+                @foreach ($preorders->where('preorder_kitchen_status', \App\Models\Reservation::PREORDER_KITCHEN_STATUS_PENDING) as $reservation)
+                    <article
+                        x-data="{
+                            submitting: false,
+                            error: '',
+                            async acceptOrder(url) {
+                                this.submitting = true;
+                                this.error = '';
+                                try {
+                                    const response = await fetch(url, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                        },
+                                    });
+                                    const result = await response.json();
+                                    if (!response.ok) throw new Error(result.message || 'Could not accept this pre-order.');
+                                    window.location.reload();
+                                } catch (error) {
+                                    this.error = error.message || 'Could not accept this pre-order.';
+                                    this.submitting = false;
+                                }
+                            },
+                        }"
+                        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#112a3d]"
+                    >
+                        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 pb-4 dark:border-white/10">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-white/50">Reservation pre-order</p>
+                                <h3 class="mt-1 text-lg font-bold text-gray-900 dark:text-white">#{{ $reservation->id }}</h3>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-white/55">{{ $reservation->customer_name }}@if ($reservation->diningTable) · {{ $reservation->diningTable->label() }}@endif</p>
+                            </div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:bg-amber-400/10 dark:text-amber-300">New pre-order</span>
+                        </div>
+                        <ul class="mt-4 space-y-3 text-sm">
+                            @foreach ($reservation->kitchen_items as $item)
+                                <li class="flex items-start justify-between gap-4">
+                                    <span class="text-gray-700 dark:text-white/80"><span class="font-semibold">{{ $item['quantity'] }}×</span> {{ $item['item_name'] }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <p x-cloak x-show="error" x-text="error" role="alert" class="mt-3 text-sm font-medium text-red-600 dark:text-red-400"></p>
+                        <button type="button" x-on:click="acceptOrder(@js(route('kitchen.preorders.accept', $reservation)))" x-bind:disabled="submitting" class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-admin-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-admin-navy-hover disabled:cursor-not-allowed disabled:opacity-60">
+                            <span x-show="!submitting">Accept Pre-order</span><span x-cloak x-show="submitting">Accepting...</span>
+                        </button>
+                    </article>
+                @endforeach
             </div>
         </section>
 
@@ -132,7 +182,32 @@
 
             <div class="space-y-4">
                 @forelse ($orders->where('status', \App\Models\Order::STATUS_PREPARING) as $order)
-                    <article class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#112a3d]">
+                    <article
+                        x-data="{
+                            submitting: false,
+                            error: '',
+                            async markReady(url) {
+                                this.submitting = true;
+                                this.error = '';
+                                try {
+                                    const response = await fetch(url, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                        },
+                                    });
+                                    const result = await response.json();
+                                    if (!response.ok) throw new Error(result.message || 'Could not mark this order ready.');
+                                    window.location.reload();
+                                } catch (error) {
+                                    this.error = error.message || 'Could not mark this order ready.';
+                                    this.submitting = false;
+                                }
+                            },
+                        }"
+                        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#112a3d]"
+                    >
                         <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 pb-4 dark:border-white/10">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-white/50">Order</p>
@@ -153,17 +228,91 @@
                                 </li>
                             @endforeach
                         </ul>
+                        <p x-cloak x-show="error" x-text="error" role="alert" class="mt-3 text-sm font-medium text-red-600 dark:text-red-400"></p>
+                        <button
+                            type="button"
+                            x-on:click="markReady(@js(route('kitchen.orders.ready', $order)))"
+                            x-bind:disabled="submitting"
+                            class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-admin-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-admin-navy-hover focus:outline-none focus:ring-2 focus:ring-admin-navy/40 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-[#112a3d]"
+                        >
+                            <span x-show="!submitting">Mark Ready</span><span x-cloak x-show="submitting">Updating...</span>
+                        </button>
                     </article>
                 @empty
-                    <div class="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/60 px-6 py-10 text-center dark:border-white/15 dark:bg-white/[0.03]">
-                        <span class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-gray-500 dark:bg-white/10 dark:text-white/60" aria-hidden="true">
-                            <i class="fa-solid fa-fire-burner"></i>
-                        </span>
-                        <h3 class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">No orders cooking yet</h3>
-                        <p class="mt-1 max-w-xs text-sm text-gray-500 dark:text-white/55">Accepted orders will appear here while they are being prepared.</p>
-                    </div>
+                    @if ($preorders->where('preorder_kitchen_status', \App\Models\Reservation::PREORDER_KITCHEN_STATUS_PREPARING)->isEmpty())
+                        <div class="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/60 px-6 py-10 text-center dark:border-white/15 dark:bg-white/[0.03]">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-gray-500 dark:bg-white/10 dark:text-white/60" aria-hidden="true">
+                                <i class="fa-solid fa-fire-burner"></i>
+                            </span>
+                            <h3 class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">No orders cooking yet</h3>
+                            <p class="mt-1 max-w-xs text-sm text-gray-500 dark:text-white/55">Accepted orders will appear here while they are being prepared.</p>
+                        </div>
+                    @endif
                 @endforelse
+                @foreach ($preorders->where('preorder_kitchen_status', \App\Models\Reservation::PREORDER_KITCHEN_STATUS_PREPARING) as $reservation)
+                    <article
+                        x-data="{
+                            submitting: false,
+                            error: '',
+                            async markReady(url) {
+                                this.submitting = true;
+                                this.error = '';
+                                try {
+                                    const response = await fetch(url, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                        },
+                                    });
+                                    const result = await response.json();
+                                    if (!response.ok) throw new Error(result.message || 'Could not mark this pre-order ready.');
+                                    window.location.reload();
+                                } catch (error) {
+                                    this.error = error.message || 'Could not mark this pre-order ready.';
+                                    this.submitting = false;
+                                }
+                            },
+                        }"
+                        class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#112a3d]"
+                    >
+                        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 pb-4 dark:border-white/10">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-white/50">Reservation pre-order</p>
+                                <h3 class="mt-1 text-lg font-bold text-gray-900 dark:text-white">#{{ $reservation->id }}</h3>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-white/55">{{ $reservation->customer_name }}@if ($reservation->diningTable) · {{ $reservation->diningTable->label() }}@endif</p>
+                            </div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-400/10 dark:text-blue-300">Preparing</span>
+                        </div>
+                        <ul class="mt-4 space-y-3 text-sm">
+                            @foreach ($reservation->kitchen_items as $item)
+                                <li class="text-gray-700 dark:text-white/80"><span class="font-semibold">{{ $item['quantity'] }}×</span> {{ $item['item_name'] }}</li>
+                            @endforeach
+                        </ul>
+                        <p x-cloak x-show="error" x-text="error" role="alert" class="mt-3 text-sm font-medium text-red-600 dark:text-red-400"></p>
+                        <button
+                            type="button"
+                            x-on:click="markReady(@js(route('kitchen.preorders.ready', $reservation)))"
+                            x-bind:disabled="submitting"
+                            class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-admin-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-admin-navy-hover focus:outline-none focus:ring-2 focus:ring-admin-navy/40 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-[#112a3d]"
+                        >
+                            <span x-show="!submitting">Mark Ready</span><span x-cloak x-show="submitting">Updating...</span>
+                        </button>
+                    </article>
+                @endforeach
             </div>
         </section>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        window.setInterval(() => {
+            const activeElement = document.activeElement;
+            const editing = activeElement && activeElement.matches('input, textarea, select');
+            if (document.visibilityState === 'visible' && !editing) {
+                window.location.reload();
+            }
+        }, 20000);
+    </script>
+@endpush

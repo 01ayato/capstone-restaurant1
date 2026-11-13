@@ -64,6 +64,12 @@ class Reservation extends Model
 
     public const DEPOSIT_STATUS_EXPIRED = 'expired';
 
+    public const PREORDER_KITCHEN_STATUS_PENDING = 'pending';
+
+    public const PREORDER_KITCHEN_STATUS_PREPARING = 'preparing';
+
+    public const PREORDER_KITCHEN_STATUS_READY = 'ready';
+
     public const DEPOSIT_STATUS_LABELS = [
         self::DEPOSIT_STATUS_PENDING_AT_RESTAURANT => 'Pay at restaurant',
         self::DEPOSIT_STATUS_PENDING => 'Awaiting online payment',
@@ -97,6 +103,7 @@ class Reservation extends Model
         'duration_minutes',
         'notes',
         'preorder_items',
+        'preorder_kitchen_status',
         'status',
     ];
 
