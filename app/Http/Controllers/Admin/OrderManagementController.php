@@ -47,6 +47,17 @@ class OrderManagementController extends Controller
             'status' => ['required', Rule::in(Order::STATUSES)],
         ]);
 
+        if (
+            $order->payment_status !== Order::PAYMENT_STATUS_PAID
+            && ! in_array($validated['status'], [Order::STATUS_PENDING, Order::STATUS_CANCELLED], true)
+        ) {
+            $message = 'An unpaid order cannot enter preparation until payment is confirmed.';
+
+            return back()
+                ->withErrors(['status' => $message])
+                ->with('error', $message);
+        }
+
         $order->update(['status' => $validated['status']]);
 
         return back()->with('success', 'Order status updated.');

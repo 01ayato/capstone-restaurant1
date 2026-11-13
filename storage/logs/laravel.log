@@ -12508,3 +12508,32 @@
 [2026-11-13 07:40:06] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-kds-order","status":"PAID","result":"order_paid"} 
 [2026-11-13 07:40:06] testing.INFO: Xendit webhook received {"payload":{"id":"inv-kds-reservation","external_id":"reservation-1","status":"PAID","amount":500,"currency":"PHP"}} 
 [2026-11-13 07:40:06] testing.INFO: Xendit webhook processed {"external_id":"reservation-1","invoice_id":"inv-kds-reservation","status":"PAID","result":"reservation_paid"} 
+[2026-11-13 08:55:50] local.INFO: Xendit invoice API response {"external_id":"order-9","http_status":200,"invoice_id":"6af6d095458447fb0e1c3fab","invoice_status":"PENDING","currency":"PHP","amount":1290,"invoice_url_host":"checkout-staging.xendit.co","invoice_url_scheme":"https"} 
+[2026-11-13 09:04:20] testing.INFO: Xendit webhook received {"payload":{"id":"inv-kds-order","external_id":"order-1","status":"PAID","amount":250,"currency":"PHP"}} 
+[2026-11-13 09:04:20] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-kds-order","status":"PAID","result":"order_paid"} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook received {"payload":{"id":"inv-kds-reservation","external_id":"reservation-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook processed {"external_id":"reservation-1","invoice_id":"inv-kds-reservation","status":"PAID","result":"reservation_paid"} 
+[2026-11-13 09:04:21] testing.WARNING: Rejected Xendit webhook with invalid callback token  
+[2026-11-13 09:04:21] testing.WARNING: Rejected Xendit webhook with invalid callback token  
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook received {"payload":{"id":"inv-order-paid","external_id":"order-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-order-paid","status":"PAID","result":"order_paid"} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook received {"payload":{"id":"inv-order-paid","external_id":"order-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-order-paid","status":"PAID","result":"ignored"} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook received {"payload":{"id":"inv-order-expired","external_id":"order-1","status":"EXPIRED","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-order-expired","status":"EXPIRED","result":"order_expired"} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook received {"payload":{"id":"inv-reservation-paid","external_id":"reservation-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:04:21] testing.INFO: Xendit webhook processed {"external_id":"reservation-1","invoice_id":"inv-reservation-paid","status":"PAID","result":"reservation_paid"} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook received {"payload":{"id":"inv-kds-order","external_id":"order-1","status":"PAID","amount":250,"currency":"PHP"}} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-kds-order","status":"PAID","result":"order_paid"} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook received {"payload":{"id":"inv-kds-reservation","external_id":"reservation-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"reservation-1","invoice_id":"inv-kds-reservation","status":"PAID","result":"reservation_paid"} 
+[2026-11-13 09:06:03] testing.WARNING: Rejected Xendit webhook with invalid callback token  
+[2026-11-13 09:06:03] testing.WARNING: Rejected Xendit webhook with invalid callback token  
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook received {"payload":{"id":"inv-order-paid","external_id":"order-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-order-paid","status":"PAID","result":"order_paid"} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook received {"payload":{"id":"inv-order-paid","external_id":"order-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-order-paid","status":"PAID","result":"ignored"} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook received {"payload":{"id":"inv-order-expired","external_id":"order-1","status":"EXPIRED","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-order-expired","status":"EXPIRED","result":"order_expired"} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook received {"payload":{"id":"inv-reservation-paid","external_id":"reservation-1","status":"PAID","amount":500,"currency":"PHP"}} 
+[2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"reservation-1","invoice_id":"inv-reservation-paid","status":"PAID","result":"reservation_paid"} 

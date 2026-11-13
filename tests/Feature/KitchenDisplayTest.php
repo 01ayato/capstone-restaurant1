@@ -58,6 +58,25 @@ class KitchenDisplayTest extends TestCase
             'quantity' => 1,
             'line_total' => 250,
         ]);
+        $unpaidOrder = Order::query()->create([
+            'order_number' => 'SG-KDS-UNPAID',
+            'customer_name' => 'Unpaid Customer',
+            'contact_number' => '09123456789',
+            'delivery_address' => 'Table 2',
+            'payment_method' => 'xendit',
+            'payment_status' => Order::PAYMENT_STATUS_PENDING,
+            'subtotal' => 250,
+            'total' => 250,
+            'status' => Order::STATUS_PREPARING,
+        ]);
+        OrderItem::query()->create([
+            'order_id' => $unpaidOrder->id,
+            'menu_item_id' => $menuItem->id,
+            'item_name' => $menuItem->name,
+            'unit_price' => 250,
+            'quantity' => 1,
+            'line_total' => 250,
+        ]);
         $this->withHeader('x-callback-token', 'test-callback-token')
             ->postJson(route('webhooks.xendit'), [
                 'id' => 'inv-kds-order',
@@ -102,6 +121,7 @@ class KitchenDisplayTest extends TestCase
         $this->get('/kitchen')
             ->assertOk()
             ->assertSee('SG-KDS-1')
+            ->assertDontSee('SG-KDS-UNPAID')
             ->assertSee('Reservation pre-order')
             ->assertSee('#'.$preorder->id)
             ->assertDontSee($unconfirmedPreorder->customer_name);

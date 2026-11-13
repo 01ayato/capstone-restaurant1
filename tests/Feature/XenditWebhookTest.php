@@ -41,7 +41,7 @@ class XenditWebhookTest extends TestCase
             'xendit_invoice_id' => 'inv-order-paid',
             'subtotal' => 500,
             'total' => 500,
-            'status' => Order::STATUS_PENDING,
+            'status' => Order::STATUS_PREPARING,
         ]);
 
         $response = $this->sendWebhook("order-{$order->id}", 'inv-order-paid', 'PAID');
@@ -50,6 +50,7 @@ class XenditWebhookTest extends TestCase
             'id' => $order->id,
             'payment_status' => Order::PAYMENT_STATUS_PAID,
             'payment_reference' => 'inv-order-paid',
+            'status' => Order::STATUS_PENDING,
         ]);
 
         $this->sendWebhook("order-{$order->id}", 'inv-order-paid', 'PAID')

@@ -17,6 +17,10 @@
                 <div class="mt-8 space-y-4">
                     @foreach ($orders as $order)
                         @php
+                            $displayStatus = $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID
+                                && $order->status !== \App\Models\Order::STATUS_CANCELLED
+                                    ? \App\Models\Order::STATUS_PENDING
+                                    : $order->status;
                             $statusColors = [
                                 'pending' => 'bg-amber-100 text-amber-700 border-amber-200',
                                 'preparing' => 'bg-blue-100 text-blue-700 border-blue-200',
@@ -24,7 +28,10 @@
                                 'completed' => 'bg-green-100 text-green-700 border-green-200',
                                 'cancelled' => 'bg-red-100 text-red-700 border-red-200',
                             ];
-                            $color = $statusColors[$order->status] ?? 'bg-slate-100 text-gray-600 border-gray-200';
+                            $color = $statusColors[$displayStatus] ?? 'bg-slate-100 text-gray-600 border-gray-200';
+                            $statusLabel = $displayStatus === $order->status
+                                ? $order->statusLabel()
+                                : \App\Models\Order::STATUS_LABELS[$displayStatus];
                         @endphp
                         <article class="rounded-2xl border border-gray-200 bg-white p-6 backdrop-blur-sm">
                             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -34,7 +41,7 @@
                                     <p class="mt-1 text-sm text-gray-500">{{ $order->created_at->format('M d, Y h:i A') }}</p>
                                 </div>
                                 <span class="inline-flex self-start rounded-full border px-3 py-1 text-xs font-semibold {{ $color }}">
-                                    {{ $order->statusLabel() }}
+                                    {{ $statusLabel }}
                                 </span>
                             </div>
                             <p class="mt-3 text-sm text-gray-600">

@@ -64,6 +64,9 @@ class XenditWebhookController extends Controller
                         'payment_status' => Order::PAYMENT_STATUS_PAID,
                         'payment_reference' => $payload['id'],
                         'payment_amount_paid' => $payload['amount'],
+                        'status' => $order->status === Order::STATUS_CANCELLED
+                            ? Order::STATUS_CANCELLED
+                            : Order::STATUS_PENDING,
                     ]);
 
                     return ['type' => 'order_paid', 'order_id' => $order->id];
