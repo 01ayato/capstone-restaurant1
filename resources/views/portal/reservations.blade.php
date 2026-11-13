@@ -167,7 +167,7 @@
                                             <label for="party_size" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">How many guests?</label>
                                             <div class="flex items-center gap-2">
                                                 <button type="button" class="flex size-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-slate-100" x-on:click="partySize = Math.max(1, partySize - 1); onPartySizeChange()">−</button>
-                                                <input id="party_size" type="number" min="1" max="50" x-model.number="partySize" x-on:input="onPartySizeChange()" class="sg-input w-full text-center">
+                                                <input id="party_size" type="number" min="1" max="50" x-model.number="partySize" x-on:input="$nextTick(() => onPartySizeChange())" class="sg-input w-full text-center">
                                                 <button type="button" class="flex size-10 items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-slate-100" x-on:click="partySize = Math.min(50, partySize + 1); onPartySizeChange()">+</button>
                                             </div>
                                         </div>
@@ -221,9 +221,9 @@
                                                 <template x-for="table in (selectedGroup()?.tables ?? []).filter(t => t.is_placed_on_map)" :key="'map-' + table.id">
                                                     <button type="button"
                                                         class="absolute flex size-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-xs font-bold text-white shadow-lg transition"
-                                                        x-bind:class="[mapMarkerClass(table), isTableUnavailable(table.id) ? '' : 'hover:scale-110']"
+                                                        x-bind:class="[mapMarkerClass(table), isTableUnavailable(table.id) || !canAccommodateParty(table) ? '' : 'hover:scale-110']"
                                                         x-bind:style="mapMarkerStyle(table)"
-                                                        x-bind:disabled="isTableUnavailable(table.id)"
+                                                        x-bind:disabled="isTableUnavailable(table.id) || !canAccommodateParty(table)"
                                                         x-on:click="selectTable(table)"
                                                         x-bind:title="'Table ' + table.table_number + ' — ' + tableStatusLabel(table)"
                                                         x-text="table.table_number"></button>
@@ -235,15 +235,15 @@
                                             <template x-for="table in (selectedGroup()?.tables ?? [])" :key="'grid-' + table.id">
                                                 <button type="button" class="rounded-xl border p-3 text-left transition"
                                                     x-bind:class="tableCardClass(table)"
-                                                    x-bind:disabled="isTableUnavailable(table.id)"
+                                                    x-bind:disabled="isTableUnavailable(table.id) || !canAccommodateParty(table)"
                                                     x-on:click="selectTable(table)">
                                                     <p class="text-sm font-bold text-gray-900">Table <span x-text="table.table_number"></span></p>
                                                     <p class="text-xs text-gray-500"><span x-text="table.chair_count"></span> chairs</p>
                                                     <p class="mt-1 text-[10px] font-semibold uppercase"
                                                         x-bind:class="{
-                                                            'text-red-400': isTableUnavailable(table.id),
+                                                            'text-red-400': isTableUnavailable(table.id) || !canAccommodateParty(table),
                                                             'text-emerald-400': !isTableUnavailable(table.id) && partyFitsTable(table),
-                                                            'text-amber-400': !isTableUnavailable(table.id) && !partyFitsTable(table),
+                                                            'text-amber-400': !isTableUnavailable(table.id) && canAccommodateParty(table) && !partyFitsTable(table),
                                                         }"
                                                         x-text="tableStatusLabel(table)"></p>
                                                 </button>
@@ -409,6 +409,14 @@
                                 </div>
 
                                 {{-- Navigation --}}
+                                <p
+                                    x-show="step === 4 && !canSubmit()"
+                                    x-cloak
+                                    role="status"
+                                    class="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-100"
+                                >
+                                    Please review your guest count, date, and table selection before continuing.
+                                </p>
                                 <div class="mt-6 flex items-center gap-3 border-t border-gray-200 pt-5">
                                     <button type="button" x-show="step > 1" x-on:click="prevStep()"
                                         class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-slate-50">

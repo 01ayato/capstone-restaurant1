@@ -1,6 +1,9 @@
 /**
  * @param {import('alpinejs').Alpine} Alpine
  */
+const MAX_PARTY_SIZE = 50;
+const MAX_ADDITIONAL_CHAIRS = 20;
+
 export function registerPortalReservationsPage(Alpine) {
     Alpine.data('portalReservationsPage', (initial = {}) => ({
         groups: initial?.groups ?? [],
@@ -47,6 +50,7 @@ export function registerPortalReservationsPage(Alpine) {
             this.occupiedTableIds = this.groups.flatMap((g) =>
                 (g.tables ?? []).filter((t) => t.is_occupied).map((t) => Number(t.id)),
             );
+            this.onPartySizeChange();
 
             this.$watch('reservedAt', () => this.scheduleAvailabilityRefresh());
             if (this.reservedAt) {
@@ -139,6 +143,9 @@ export function registerPortalReservationsPage(Alpine) {
             }
 
             if (this.step === 2) {
+                if (!this.isValidPartySize()) {
+                    return `Party size must be between 1 and ${MAX_PARTY_SIZE}.`;
+                }
                 if (!this.reservedAt) {
                     return 'Please choose a date and time.';
                 }
@@ -153,6 +160,9 @@ export function registerPortalReservationsPage(Alpine) {
                 }
                 if (this.isTableUnavailable(this.selectedTableId)) {
                     return 'That table is booked or occupied. Please choose another.';
+                }
+                if (!this.canAccommodateParty(this.selectedTable())) {
+                    return `This party exceeds the table capacity, even with ${MAX_ADDITIONAL_CHAIRS} extra chairs.`;
                 }
             }
 
@@ -183,11 +193,13 @@ export function registerPortalReservationsPage(Alpine) {
         },
 
         canProceedStep2() {
-            return Boolean(this.reservedAt)
+            return this.isValidPartySize()
+                && Boolean(this.reservedAt)
                 && this.withinOpeningHours
                 && !this.sameDayTooSoon()
                 && Boolean(this.selectedTableId)
-                && !this.isTableUnavailable(this.selectedTableId);
+                && !this.isTableUnavailable(this.selectedTableId)
+                && this.canAccommodateParty(this.selectedTable());
         },
 
         scheduleAvailabilityRefresh() {
@@ -247,6 +259,18 @@ export function registerPortalReservationsPage(Alpine) {
             return this.isTableBooked(tableId) || this.isTableOccupied(tableId);
         },
 
+        isValidPartySize() {
+            const guests = Number(this.partySize);
+
+            return Number.isInteger(guests) && guests >= 1 && guests <= MAX_PARTY_SIZE;
+        },
+
+        canAccommodateParty(table) {
+            return Boolean(table)
+                && this.isValidPartySize()
+                && this.seatsNeeded() <= Number(table.chair_count) + MAX_ADDITIONAL_CHAIRS;
+        },
+
         tableStatusLabel(table) {
             if (this.isTableOccupied(table.id)) {
                 return 'Occupied';
@@ -254,6 +278,14 @@ export function registerPortalReservationsPage(Alpine) {
 
             if (this.isTableBooked(table.id)) {
                 return 'Booked';
+            }
+
+            if (!this.isValidPartySize()) {
+                return `Enter 1–${MAX_PARTY_SIZE} guests`;
+            }
+
+            if (!this.canAccommodateParty(table)) {
+                return `Max ${Number(table.chair_count) + MAX_ADDITIONAL_CHAIRS} guests for this table`;
             }
 
             if (this.partyFitsTable(table)) {
@@ -286,6 +318,11 @@ export function registerPortalReservationsPage(Alpine) {
                 return;
             }
 
+            if (!this.canAccommodateParty(table)) {
+                window.toast?.warning?.(`This party exceeds the table capacity, even with ${MAX_ADDITIONAL_CHAIRS} extra chairs.`);
+                return;
+            }
+
             this.selectedTableId = table.id;
             this.onPartySizeChange();
         },
@@ -295,7 +332,7 @@ export function registerPortalReservationsPage(Alpine) {
         },
 
         tableCardClass(table) {
-            if (this.isTableUnavailable(table.id)) {
+            if (this.isTableUnavailable(table.id) || !this.canAccommodateParty(table)) {
                 return 'cursor-not-allowed border-red-500/40 bg-red-500/10 opacity-60';
             }
 
@@ -311,7 +348,7 @@ export function registerPortalReservationsPage(Alpine) {
         },
 
         mapMarkerClass(table) {
-            if (this.isTableUnavailable(table.id)) {
+            if (this.isTableUnavailable(table.id) || !this.canAccommodateParty(table)) {
                 return 'cursor-not-allowed bg-red-500 opacity-70';
             }
 
@@ -371,22 +408,45 @@ export function registerPortalReservationsPage(Alpine) {
             const min = this.minAdditionalChairs();
             const options = [];
 
-            for (let i = min; i <= 20; i++) {
+            for (let i = min; i <= MAX_ADDITIONAL_CHAIRS; i++) {
                 options.push(i);
             }
 
-            return options.length > 0 ? options : [0];
+            return options;
         },
 
         onPartySizeChange() {
+            if (this.partySize !== '' && this.partySize !== null) {
+                const enteredPartySize = Number(this.partySize);
+                if (Number.isFinite(enteredPartySize)) {
+                    const normalizedPartySize = Math.min(
+                        MAX_PARTY_SIZE,
+                        Math.max(1, Math.trunc(enteredPartySize)),
+                    );
+
+                    if (enteredPartySize > MAX_PARTY_SIZE) {
+                        window.toast?.warning?.(`Reservations are limited to ${MAX_PARTY_SIZE} guests.`);
+                    }
+
+                    this.partySize = normalizedPartySize;
+                }
+            }
+
             if (!this.needsAdditionalChairs()) {
                 this.additionalChairs = 0;
             } else {
                 this.additionalChairs = this.minAdditionalChairs();
             }
 
-            if (this.selectedTableId && this.isTableUnavailable(this.selectedTableId)) {
+            if (
+                this.selectedTableId
+                && (
+                    this.isTableUnavailable(this.selectedTableId)
+                    || !this.canAccommodateParty(this.selectedTable())
+                )
+            ) {
                 this.selectedTableId = null;
+                this.additionalChairs = 0;
             }
         },
 

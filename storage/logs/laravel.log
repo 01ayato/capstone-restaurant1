@@ -12537,3 +12537,4 @@
 [2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"order-1","invoice_id":"inv-order-expired","status":"EXPIRED","result":"order_expired"} 
 [2026-11-13 09:06:03] testing.INFO: Xendit webhook received {"payload":{"id":"inv-reservation-paid","external_id":"reservation-1","status":"PAID","amount":500,"currency":"PHP"}} 
 [2026-11-13 09:06:03] testing.INFO: Xendit webhook processed {"external_id":"reservation-1","invoice_id":"inv-reservation-paid","status":"PAID","result":"reservation_paid"} 
+[2026-11-13 09:26:12] local.INFO: Xendit invoice API response {"external_id":"reservation-5","http_status":200,"invoice_id":"6af6d7b4a4105c5a5341550f","invoice_status":"PENDING","currency":"PHP","amount":1000,"invoice_url_host":"checkout-staging.xendit.co","invoice_url_scheme":"https"} 
